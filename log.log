@@ -1,0 +1,80 @@
+1
+1
+1
+1
+1
+here
+{"action":"login","login_str":"tha001testcompany","password":"thapelo1234"}
+"
+"
+null
+{"action":"login","login_str":"tha001testcompany","password":"thapelo1234"}
+login
+here1
+here2
+{"status":"Success","error":""}
+Here11
+SELECT 1 FROM t_customers WHERE login_str = 'tha001testcompany' AND password = 'thapelo1234' LIMIT 1;
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Failed to run query. MySQL error: Column count doesn't match value count at row 1
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database

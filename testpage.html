@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <script type="text/javascript" src="js/libs/jquery/jquery.js"></script>       
+        
+        <script type="text/javascript">
+            function postJSON(dataObject,url)
+            {       
+                var sendString = '';
+                //sendString = objToString(dataObject);
+                
+                sendString = $(this).serialize() + "&" + $.param(dataObject);
+                
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: dataObject,                    
+                    cache: false,                    
+                    success: function(data, textStatus, jqXHR){processJSONCall(data,textStatus,dataObject);},            
+                    error:function(jqXHR, textStatus, errorThrown){errorAlert(jqXHR,textStatus,errorThrown,dataObject);},
+                });                 
+            }
+            
+            function processJSONCall (data,textStatus,dataObject)
+            {                             
+                var dataReturned = 0;
+                var action = dataObject.action;   
+
+                var jsonobj = jQuery.parseJSON( data ); ;
+                
+                if(action === 'login')
+                {                 
+                    alert(jsonobj.session_id);
+                    if(jsonobj.status === 'Success')
+                    {
+                        $('#sessionid').val(jsonobj.session_id);
+                    }else{
+                        alert('Login failed:'+jsonobj.error);
+                    }
+                } 
+            }
+            
+            function errorAlert(jqXHR,textStatus,errorThrown,dataObject)
+            {                
+                if(errorThrown !== '')
+                {
+                    alert('[AJAX ERROR]: '+errorThrown);
+                }
+            }
+                        
+            function objToString (obj) 
+            {
+                var tabjson=[];
+                for (var p in obj) {
+                    if (obj.hasOwnProperty(p)) {
+                        tabjson.push('"'+p +'"'+ ':"' + obj[p]+'"');
+                    }
+                }  tabjson.push()
+                return '{'+tabjson.join(',')+'}';
+            }
+            // /////////////////////////////////////////////////////////////////
+            function getSession()
+            {
+                var dataObject = {"action":"login","login_str":"tha001testcompany","password":"thapelo1234"};                                                   
+                postJSON(dataObject,'http://localhost/webservice/index.php');
+            }
+            
+            
+            
+        </script>
+    </head>
+    <body>
+        <input type="hidden" name="sessionid" id="sessionid"/>
+        <input type="button" value="Test session" onclick="getSession()"/>
+        <br>
+    </body>
+</html>
