@@ -13,6 +13,9 @@ switch($action) { //Switch case for value of action
   case "get_balance": 
     get_balance();       
   break;
+  case "get_statement": 
+    get_statement();       
+  break;
 }
  
 function login()
@@ -64,8 +67,7 @@ function get_balance()
         echo $jsonResponse;
         exit;
     }    
-    
-    //{"action":"get_balance","session_id":$('#sessionid').val(),"userid":$('#userid').val()}
+        
     //Get balances for this user
     $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."' LIMIT 1;");            
     $row = $resultset->fetch_array(MYSQLI_ASSOC); 
@@ -88,6 +90,45 @@ function get_balance()
     }
 }
 
+function get_statement()
+{
+    if(!checksessionid($_POST['session_id']))
+    {
+        $jsonResponse = array('status' => 'Fail', 'error' => 'Invalid request');
+        $jsonResponse = json_encode($jsonResponse);
+        
+        echo $jsonResponse;
+        exit;
+    }  
+    
+    //Get mini statement for this user
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHERE tw.uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."' AND tw.action=tc.code ORDER BY tw.trans_date DESC LIMIT 5;");                    
+    
+    if(mysqli_num_rows($resultset) === 0)
+    {        
+        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find transactions this userid:'.$_POST['uid'].'');
+        $jsonResponse = json_encode($jsonResponse);
+        
+        echo $jsonResponse;
+        exit;
+    }else{                               
+        log_wallet_audit('wa0005',$_POST['uid'],'','','','');
+             
+        $statement = "";
+        
+        while($row = $resultset->fetch_array(MYSQLI_ASSOC))
+        {
+            $statement .= $row['trans_date'].",".$row['shortdesc'].",".$row['value']."|";
+        }
+        
+        $jsonResponse = array('status' => 'Success', 'error' => '','statement' => $statement);                                                  
+        $jsonResponse = json_encode($jsonResponse);
+        
+        echo $jsonResponse;
+        exit;
+    }
+}
+
 
 //Check sessionid validity
 function checksessionid($sessionid)
@@ -99,14 +140,14 @@ function checksessionid($sessionid)
         return false;
     }else{
         return true;
-    }
+    }    
 }
 
 function log_wallet_audit($action,$uid,$value,$sourcepool,$destinationpool,$voucherserial)
 {
-    if (!$GLOBALS['dbObject']->runQuery("INSERT INTO t_walletaudit (uid,action,value,source_pool,destination_pool,voucher_serial_number) VALUES ('".$uid."','".$action.",'".$value.",'".$sourcepool.",'".$destinationpool.",'".$voucherserial.";")) 
+    if (!$GLOBALS['dbObject']->runQuery("INSERT INTO t_walletaudit (uid,action,value,source_pool,destination_pool,voucher_serial_number) VALUES ('".$uid."','".$action."','".$value."','".$sourcepool."','".$destinationpool."','".$voucherserial."');")) 
     {                   
-        writelog("log.log", "[AUDIT LOG] Failed to write to audit log");
+        writelog("log.log", "[AUDIT LOG] Failed to write to audit log");        
         exit;
     }else{
         $resultset = $GLOBALS['dbObject']->runQuery("SELECT LAST_INSERT_ID() as id FROM t_walletaudit;");            

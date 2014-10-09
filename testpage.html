@@ -56,6 +56,15 @@ and open the template in the editor.
                         alert('Get balance failed:'+jsonobj.error);
                     }
                 }
+                else if(action === 'get_statement')
+                {                    
+                    if(jsonobj.status === 'Success')
+                    {
+                        alert('Statement: '+jsonobj.statement);
+                    }else{
+                        alert('Get statement failed:'+jsonobj.error);
+                    }
+                }
                 
             }
             
@@ -90,7 +99,11 @@ and open the template in the editor.
                 postJSON(dataObject,'http://localhost/webservice/index.php');
             }
             
-            
+            function getStatement()
+            {
+                var dataObject = {"action":"get_statement","session_id":$('#sessionid').val(),"uid":$('#userid').val()};                     
+                postJSON(dataObject,'http://localhost/webservice/index.php');
+            }
             
         </script>
     </head>
@@ -100,7 +113,9 @@ and open the template in the editor.
         
         <input type="button" value="Test session" onclick="getSession()"/>
         
-        <input type="button" value="Get balance" onclick="getBalance()"/>
+        <input type="button" value="Test one" onclick="getBalance()"/>
+        
+        <input type="button" value="Test two" onclick="getStatement()"/>
         <br>
     </body>
 </html>
