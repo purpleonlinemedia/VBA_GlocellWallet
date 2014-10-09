@@ -34,23 +34,33 @@ and open the template in the editor.
             {                             
                 var dataReturned = 0;
                 var action = dataObject.action;   
-
+                
+                //alert(data);
                 var jsonobj = jQuery.parseJSON( data ); ;
                 
                 if(action === 'login')
-                {                 
-                    alert(jsonobj.session_id);
+                {                                  
                     if(jsonobj.status === 'Success')
-                    {
+                    {                        
                         $('#sessionid').val(jsonobj.session_id);
                     }else{
                         alert('Login failed:'+jsonobj.error);
                     }
-                } 
+                }
+                else if(action === 'get_balance')
+                {                    
+                    if(jsonobj.status === 'Success')
+                    {
+                        alert('Pool: '+jsonobj.pool_balance+' KCM:'+jsonobj.kcm_wallet_balance+' GLO:'+jsonobj.glo_wallet_balance);
+                    }else{
+                        alert('Get balance failed:'+jsonobj.error);
+                    }
+                }
+                
             }
             
             function errorAlert(jqXHR,textStatus,errorThrown,dataObject)
-            {                
+            {                          
                 if(errorThrown !== '')
                 {
                     alert('[AJAX ERROR]: '+errorThrown);
@@ -74,13 +84,23 @@ and open the template in the editor.
                 postJSON(dataObject,'http://localhost/webservice/index.php');
             }
             
+            function getBalance()
+            {
+                var dataObject = {"action":"get_balance","session_id":$('#sessionid').val(),"uid":$('#userid').val()};                     
+                postJSON(dataObject,'http://localhost/webservice/index.php');
+            }
+            
             
             
         </script>
     </head>
     <body>
         <input type="hidden" name="sessionid" id="sessionid"/>
+        <input type="hidden" name="userid" id="userid" value="123"/>
+        
         <input type="button" value="Test session" onclick="getSession()"/>
+        
+        <input type="button" value="Get balance" onclick="getBalance()"/>
         <br>
     </body>
 </html>

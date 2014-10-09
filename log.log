@@ -78,3 +78,91 @@ SELECT 1 FROM t_customers WHERE login_str = 'tha001testcompany' AND password = '
 [MYSQL] Connected to database
 [MYSQL] Connected to database
 [MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[WEBSERVICE] DB Connected
+[MYSQL] Connected to database
+[WEBSERVICE] Action:login
+[MYSQL] Connected to database
+[WEBSERVICE] Action:get_balance
+[MYSQL] Connected to database
+[WEBSERVICE] Action:login
+[MYSQL] Connected to database
+[WEBSERVICE] Action:get_balance
+[GETBALANCE] In here
+[GETBALANCE] Session valid
+[GETBALANCE] Query: SELECT * FROM t_wallet WHERE uid = '123' LIMIT 1;
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] Query: SELECT * FROM t_wallet WHERE uid = '123' LIMIT 1;
+[GETBALANCE] Query Success
+[GETBALANCE] Pool balance[100.00]
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] Query: SELECT * FROM t_wallet WHERE uid = '123' LIMIT 1;
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] Query: SELECT * FROM t_wallet WHERE uid = '123' LIMIT 1;
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] Query: SELECT * FROM t_wallet WHERE uid = '123' LIMIT 1;
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] Query: SELECT * FROM t_wallet WHERE uid = '123' LIMIT 1;
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] Array: 1
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] Array: 
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] Array: 
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[GETBALANCE] pool_balance: 100.00 kcm_wallet_balance:60.00 glo_wallet_balance:10.00
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[GETBALANCE] In here
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
