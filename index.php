@@ -4,35 +4,46 @@ require_once '/include/db_access.php';
 
 $dbObject = new Databases();
 
-$action = $_POST['action'];
+$dataPOST = trim(file_get_contents('php://input'));
+
+$xml = simplexml_load_string($dataPOST);
+
+$action = $xml->action;
 
 switch($action) { //Switch case for value of action
   case "login": 
-    login();       
+    login($xml);       
   break;
   case "get_balance": 
-    get_balance();       
+    get_balance($xml);       
   break;
   case "get_statement": 
-    get_statement();       
+    get_statement($xml);       
   break;
   case "funds_transfer":
-      funds_transfer();       
+      funds_transfer($xml);       
   break;
 }
  
-function login()
+function login($xml)
 {                  
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customers WHERE login_str = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['login_str'])."' AND password = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['password'])."' LIMIT 1;");    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customers WHERE login_str = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->login_str)."' AND password = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->password)."' LIMIT 1;");    
     
     if(mysqli_num_rows($resultset) === 0)
     {
         //Failed login
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Invalid request');
-        $jsonResponse = json_encode($jsonResponse);
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid request</error> 
+</serviceResponse>
+XML;
         
-        echo $jsonResponse;
-        exit;
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;        
     }else{
         $row = $resultset->fetch_array(MYSQLI_ASSOC);
         
@@ -43,79 +54,131 @@ function login()
         
         //Insert session id        
         if (!$GLOBALS['dbObject']->runQuery("INSERT INTO t_customerslogin (session_id,cust_id,expire_date) VALUES ('".$hashString."','".$row['cust_id']."',DATE_ADD(now(), INTERVAL 1 DAY));")) 
-        {            
-            $jsonResponse = array('status' => 'Fail', 'error' => 'Failed to generate session, please contact support');
-            $jsonResponse = json_encode($jsonResponse);
-            writelog("log.log", "[LOGIN] Failed to insert sessionid: " .mysqli_error($this->conn));
-            exit;
+        {                
+            $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Failed to generate session, please contact support</error> 
+</serviceResponse>
+XML;
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;                       
         }
         
-        //Success login        
-        $jsonResponse = array('status' => 'Success', 'error' => '','session_id'=>$hashString);
-        $jsonResponse = json_encode($jsonResponse);
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Success</status>
+ <error></error> 
+ <session_id>$hashString</session_id>                 
+</serviceResponse>
+XML;
         
-        echo $jsonResponse;
-        exit;
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;            
     }
   //echo json_encode($return);
 }
 
-function get_balance()
+function get_balance($xml)
 {    
-    if(!checksessionid($_POST['session_id']))
+    if(!checksessionid($xml->session_id))
     {
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Invalid request');
-        $jsonResponse = json_encode($jsonResponse);
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid request</error> 
+</serviceResponse>
+XML;
         
-        echo $jsonResponse;
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
         exit;
+                
     }    
         
     //Get balances for this user
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."' LIMIT 1;");            
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."' LIMIT 1;");            
     $row = $resultset->fetch_array(MYSQLI_ASSOC); 
     
     if(mysqli_num_rows($resultset) === 0)
     {        
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find this userid:'.$_POST['uid'].'');
-        $jsonResponse = json_encode($jsonResponse);
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Could not find this userid:$xml->uid</error> 
+</serviceResponse>
+XML;
         
-        echo $jsonResponse;
-        exit;
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;        
     }else{                               
-        log_wallet_audit('wa0004',$_POST['uid'],'','','','');
-                
-        $jsonResponse = array('status' => 'Success', 'error' => '','pool_balance' => $row['pool_balance'],'kcm_wallet_balance' => $row['kcm_wallet'], 'glo_wallet_balance' => $row['glo_wallet']);                                                  
-        $jsonResponse = json_encode($jsonResponse);
+        log_wallet_audit('wa0004',$xml->uid,'','','','');
         
-        echo $jsonResponse;
-        exit;
+        $poolbalance = $row['pool_balance'];
+        $kcm_wallet = $row['kcm_wallet'];
+        $glo_wallet = $row['glo_wallet'];
+        
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Success</status>
+ <error></error> 
+ <pool_balance>$poolbalance</pool_balance> 
+ <kcm_wallet_balance>$kcm_wallet</kcm_wallet_balance>                 
+ <glo_wallet_balance>$glo_wallet</glo_wallet_balance>                 
+</serviceResponse>
+XML;
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;        
     }
 }
 
-function get_statement()
+function get_statement($xml)
 {
-    if(!checksessionid($_POST['session_id']))
+    if(!checksessionid($xml->session_id))
     {
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Invalid request');
-        $jsonResponse = json_encode($jsonResponse);
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid request</error> 
+</serviceResponse>
+XML;
         
-        echo $jsonResponse;
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
         exit;
-    }  
+                
+    } 
     
     //Get mini statement for this user
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHERE tw.uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."' AND tw.action=tc.code ORDER BY tw.trans_date DESC LIMIT 5;");                    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHERE tw.uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."' AND tw.action=tc.code ORDER BY tw.trans_date DESC LIMIT 5;");                    
     
     if(mysqli_num_rows($resultset) === 0)
     {        
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find transactions this userid:'.$_POST['uid'].'');
+        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find transactions this userid:'.$xml->uid.'');
         $jsonResponse = json_encode($jsonResponse);
         
         echo $jsonResponse;
         exit;
     }else{                               
-        log_wallet_audit('wa0005',$_POST['uid'],'','','','');
+        log_wallet_audit('wa0005',$xml->uid,'','','','');
              
         $statement = "";
         
@@ -132,46 +195,54 @@ function get_statement()
     }
 }
 
-function funds_transfer()
+function funds_transfer($xml)
 {
-    if(!checksessionid($_POST['session_id']))
+    if(!checksessionid($xml->session_id))
     {
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Invalid request');
-        $jsonResponse = json_encode($jsonResponse);
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid request</error> 
+</serviceResponse>
+XML;
         
-        echo $jsonResponse;
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
         exit;
+                
     }
     
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT count(*) as walletexists FROM t_wallet WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT count(*) as walletexists FROM t_wallet WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
     $row = $resultset->fetch_array(MYSQLI_ASSOC);
             
     if($row['walletexists'] === 0)
     {
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find wallet for this userid:'.$_POST['uid'].'');
+        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find wallet for this userid:'.$xml->uid.'');
         $jsonResponse = json_encode($jsonResponse);
 
         echo $jsonResponse;
         exit;
     }
     
-    if($_POST['destacc'] === 'pool')
+    if($xml->destacc === 'pool')
     {
         $destacc = 'pool_balance';
     }
-    if($_POST['destacc'] === 'glocell')
+    if($xml->destacc === 'glocell')
     {
         $destacc = 'glo_wallet';
     }
-    if($_POST['destacc'] === 'kcmobile')
+    if($xml->destacc === 'kcmobile')
     {
         $destacc = 'kcm_wallet';
     }
     
-    if($_POST['sourceacc'] === 'pool')
+    if($xml->sourceacc === 'pool')
     {
         $sourceacc = 'pool_balance';
-        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE pool_balance >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['value'])."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE pool_balance >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->value)."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
         
         if(mysqli_num_rows($resultset) === 0)
         {        
@@ -183,10 +254,10 @@ function funds_transfer()
             
         }else{  
             #Update balances
-            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$_POST['value']."),`$sourceacc` = (`$sourceacc`-".$_POST['value'].") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value.") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
             
             #Audit
-            log_wallet_audit('wa0006',$_POST['uid'],$_POST['value'],$sourceacc,$destacc,'');
+            log_wallet_audit('wa0006',$xml->uid,$xml->value,$sourceacc,$destacc,'');
             
             $jsonResponse = array('status' => 'Success', 'error' => '');
             $jsonResponse = json_encode($jsonResponse);
@@ -195,10 +266,10 @@ function funds_transfer()
             exit;
         }
     }
-    else if($_POST['sourceacc'] === 'glocell')
+    else if($xml->sourceacc === 'glocell')
     {
         $sourceacc = 'glo_wallet';
-        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE glo_wallet >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['value'])."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE glo_wallet >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->value)."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
         
         if(mysqli_num_rows($resultset) === 0)
         {        
@@ -210,10 +281,10 @@ function funds_transfer()
             
         }else{
             #Update balances
-            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$_POST['value']."),`$sourceacc` = (`$sourceacc`-".$_POST['value'].") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value.") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
             
             #Audit
-            log_wallet_audit('wa0006',$_POST['uid'],$_POST['value'],$sourceacc,$destacc,'');
+            log_wallet_audit('wa0006',$xml->uid,$xml->value,$sourceacc,$destacc,'');
             
             $jsonResponse = array('status' => 'Success', 'error' => '');
             $jsonResponse = json_encode($jsonResponse);
@@ -222,10 +293,10 @@ function funds_transfer()
             exit;
         }
     }
-    else if($_POST['sourceacc'] === 'kcmobile')
+    else if($xml->sourceacc === 'kcmobile')
     {         
         $sourceacc = 'kcm_wallet';
-        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE kcm_wallet >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['value'])."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE kcm_wallet >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->value)."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
         
         if(mysqli_num_rows($resultset) === 0)
         {                    
@@ -237,10 +308,10 @@ function funds_transfer()
             
         }else{            
             #Update balances
-            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$_POST['value']."),`$sourceacc` = (`$sourceacc`-".$_POST['value'].") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");           
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value.") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");           
             
             #Audit
-            log_wallet_audit('wa0006',$_POST['uid'],$_POST['value'],$sourceacc,$destacc,'');
+            log_wallet_audit('wa0006',$xml->uid,$xml->value,$sourceacc,$destacc,'');
             
             $jsonResponse = array('status' => 'Success', 'error' => '');
             $jsonResponse = json_encode($jsonResponse);
