@@ -16,6 +16,9 @@ switch($action) { //Switch case for value of action
   case "get_statement": 
     get_statement();       
   break;
+  case "funds_transfer":
+      funds_transfer();       
+  break;
 }
  
 function login()
@@ -127,6 +130,126 @@ function get_statement()
         echo $jsonResponse;
         exit;
     }
+}
+
+function funds_transfer()
+{
+    if(!checksessionid($_POST['session_id']))
+    {
+        $jsonResponse = array('status' => 'Fail', 'error' => 'Invalid request');
+        $jsonResponse = json_encode($jsonResponse);
+        
+        echo $jsonResponse;
+        exit;
+    }
+    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT count(*) as walletexists FROM t_wallet WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+    $row = $resultset->fetch_array(MYSQLI_ASSOC);
+            
+    if($row['walletexists'] === 0)
+    {
+        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find wallet for this userid:'.$_POST['uid'].'');
+        $jsonResponse = json_encode($jsonResponse);
+
+        echo $jsonResponse;
+        exit;
+    }
+    
+    if($_POST['destacc'] === 'pool')
+    {
+        $destacc = 'pool_balance';
+    }
+    if($_POST['destacc'] === 'glocell')
+    {
+        $destacc = 'glo_wallet';
+    }
+    if($_POST['destacc'] === 'kcmobile')
+    {
+        $destacc = 'kcm_wallet';
+    }
+    
+    if($_POST['sourceacc'] === 'pool')
+    {
+        $sourceacc = 'pool_balance';
+        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE pool_balance >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['value'])."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+        
+        if(mysqli_num_rows($resultset) === 0)
+        {        
+            $jsonResponse = array('status' => 'Fail', 'error' => 'Your source account does not have enough funds to complete this transaction');
+            $jsonResponse = json_encode($jsonResponse);
+
+            echo $jsonResponse;
+            exit;
+            
+        }else{  
+            #Update balances
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$_POST['value']."),`$sourceacc` = (`$sourceacc`-".$_POST['value'].") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+            
+            #Audit
+            log_wallet_audit('wa0006',$_POST['uid'],$_POST['value'],$sourceacc,$destacc,'');
+            
+            $jsonResponse = array('status' => 'Success', 'error' => '');
+            $jsonResponse = json_encode($jsonResponse);
+
+            echo $jsonResponse;
+            exit;
+        }
+    }
+    else if($_POST['sourceacc'] === 'glocell')
+    {
+        $sourceacc = 'glo_wallet';
+        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE glo_wallet >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['value'])."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+        
+        if(mysqli_num_rows($resultset) === 0)
+        {        
+            $jsonResponse = array('status' => 'Fail', 'error' => 'Your source account does not have enough funds to complete this transaction');
+            $jsonResponse = json_encode($jsonResponse);
+
+            echo $jsonResponse;
+            exit;
+            
+        }else{
+            #Update balances
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$_POST['value']."),`$sourceacc` = (`$sourceacc`-".$_POST['value'].") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+            
+            #Audit
+            log_wallet_audit('wa0006',$_POST['uid'],$_POST['value'],$sourceacc,$destacc,'');
+            
+            $jsonResponse = array('status' => 'Success', 'error' => '');
+            $jsonResponse = json_encode($jsonResponse);
+
+            echo $jsonResponse;
+            exit;
+        }
+    }
+    else if($_POST['sourceacc'] === 'kcmobile')
+    {         
+        $sourceacc = 'kcm_wallet';
+        $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE kcm_wallet >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['value'])."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");
+        
+        if(mysqli_num_rows($resultset) === 0)
+        {                    
+            $jsonResponse = array('status' => 'Fail', 'error' => 'Your source account does not have enough funds to complete this transaction');
+            $jsonResponse = json_encode($jsonResponse);
+
+            echo $jsonResponse;
+            exit;
+            
+        }else{            
+            #Update balances
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$_POST['value']."),`$sourceacc` = (`$sourceacc`-".$_POST['value'].") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$_POST['uid'])."';");           
+            
+            #Audit
+            log_wallet_audit('wa0006',$_POST['uid'],$_POST['value'],$sourceacc,$destacc,'');
+            
+            $jsonResponse = array('status' => 'Success', 'error' => '');
+            $jsonResponse = json_encode($jsonResponse);
+
+            echo $jsonResponse;
+            exit;
+        }
+    }
+    
 }
 
 

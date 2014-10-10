@@ -65,6 +65,15 @@ and open the template in the editor.
                         alert('Get statement failed:'+jsonobj.error);
                     }
                 }
+                else if(action === 'funds_transfer')
+                {                    
+                    if(jsonobj.status === 'Success')
+                    {
+                        alert('Success');
+                    }else{
+                        alert('Trasnfer failed:'+jsonobj.error);
+                    }
+                }
                 
             }
             
@@ -105,6 +114,11 @@ and open the template in the editor.
                 postJSON(dataObject,'http://localhost/webservice/index.php');
             }
             
+            function fundsTransfer()
+            {
+                var dataObject = {"action":"funds_transfer","session_id":$('#sessionid').val(),"value":$('#transferAmount').val(),"sourceacc":$('#sourceacc').val(),"destacc":$('#destacc').val(),"uid":$('#userid').val()};                     
+                postJSON(dataObject,'http://localhost/webservice/index.php');
+            }
         </script>
     </head>
     <body>
@@ -117,5 +131,22 @@ and open the template in the editor.
         
         <input type="button" value="Test two" onclick="getStatement()"/>
         <br>
+        <br>
+        <input type="text" id="transferAmount" name="transferAmount"/>
+        <br>
+        From:
+        <select id="sourceacc">
+            <option value="pool">pool</option>
+            <option value="glocell">glocell</option>
+            <option value="kcmobile">kcmobile</option>
+        </select>
+        To:
+        <select id="destacc">
+            <option value="pool">pool</option>
+            <option value="glocell">glocell</option>
+            <option value="kcmobile">kcmobile</option>
+        </select>
+        <br>
+        <input type="button" value="Transfer" onclick="fundsTransfer()"/>
     </body>
 </html>
