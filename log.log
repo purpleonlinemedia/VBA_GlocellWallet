@@ -85,3 +85,13 @@ SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHER
 [MYSQL] Connected to database
 [MYSQL] Connected to database
 [MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Failed to run query. MySQL error: Table 'transx.t_vouchers' doesn't exist
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+SELECT value FROM t_voucher WHERE voucher_number = '' AND allocated = 0;
+[MYSQL] Connected to database
+SELECT value FROM t_voucher WHERE voucher_number = '123456789' AND allocated = 0;
+[MYSQL] Connected to database
+[MYSQL] Connected to database

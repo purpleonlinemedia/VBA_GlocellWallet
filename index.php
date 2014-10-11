@@ -216,6 +216,70 @@ XML;
     }
 }
 
+function load_gcash($xml)
+{
+    if(!checksessionid($xml->session_id))
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Invalid request</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+
+    }
+
+    //Check if voucher exists
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT value,product FROM t_voucher WHERE voucher_number = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->voucher_number)."' AND allocated = 0;");
+
+    if(mysqli_num_rows($resultset) === 0)
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Invalid voucher number</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }else{
+        $row = $resultset->fetch_array(MYSQLI_ASSOC);
+
+        #Audit
+        $wreference = log_wallet_audit($row['product'],$xml->uid,$row['value'],'','',$xml->voucher_number);
+
+        //Update the voucher #w_reference_allocated, redeemed_date and w_reference_redeemed
+        $GLOBALS['dbObject']->runQuery("UPDATE t_voucher SET `w_reference_allocated` = '$wreference',`w_reference_redeemed` = '$wreference',redeem_date=now() WHERE voucher_number = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->voucher_number)."';");
+
+        //Update his pool balance
+        $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `pool_balance` = (`pool_balance`+".$row['value']."),last_transaction_date=now() WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
+
+
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Success</status>
+ <error></error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+}
+
 function funds_transfer($xml)
 {
     if(!checksessionid($xml->session_id))
@@ -416,8 +480,12 @@ function log_wallet_audit($action,$uid,$value,$sourcepool,$destinationpool,$vouc
         exit;
     }else{
         $resultset = $GLOBALS['dbObject']->runQuery("SELECT LAST_INSERT_ID() as id FROM t_walletaudit;");            
-        $row = $resultset->fetch_array(MYSQLI_ASSOC); 
+        $row = $resultset->fetch_array(MYSQLI_ASSOC);
+
+        $w_reference=str_pad($row['id'], 6, '0', STR_PAD_LEFT);
         
-        $GLOBALS['dbObject']->runQuery("UPDATE t_walletaudit SET w_reference='".str_pad($row['id'], 6, '0', STR_PAD_LEFT)."' WHERE Id='".$row['id']."';");    
+        $GLOBALS['dbObject']->runQuery("UPDATE t_walletaudit SET w_reference='$w_reference' WHERE Id='".$row['id']."';");
+
+        return $w_reference;
     }
 }
