@@ -95,3 +95,6 @@ SELECT value FROM t_voucher WHERE voucher_number = '' AND allocated = 0;
 SELECT value FROM t_voucher WHERE voucher_number = '123456789' AND allocated = 0;
 [MYSQL] Connected to database
 [MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
