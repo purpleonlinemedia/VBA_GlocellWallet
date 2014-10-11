@@ -80,8 +80,8 @@ CREATE TABLE IF NOT EXISTS `t_customers` (
 -- Dumping data for table `t_customers`
 --
 
-INSERT INTO `t_customers` (`id`, `cust_id`, `acc_type`, `company_name`, `branch_name`, `contact_person`, `contact_email`, `contact_num`, `ip_add`, `sales_repate`, `login_str`, `password`) VALUES
-(1, 'tha001', 'retail', 'Thapelo Test Company', 'Randburg', 'Thapelo Afrika', 'thapeloa@gmail.com', '0798975549', '000.000.000.000', 1, 'tha001testcompany', 'thapelo1234');
+INSERT INTO `t_customers` (`cust_id`, `acc_type`, `company_name`, `branch_name`, `contact_person`, `contact_email`, `contact_num`, `ip_add`, `sales_repate`, `login_str`, `password`) VALUES
+('tha001', 'retail', 'Thapelo Test Company', 'Randburg', 'Thapelo Afrika', 'thapeloa@gmail.com', '0798975549', '000.000.000.000', 1, 'tha001testcompany', 'thapelo1234');
 
 -- --------------------------------------------------------
 
@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS `t_customerslogin` (
   `session_id` mediumtext NOT NULL,
   `cust_id` varchar(10) NOT NULL,
   `expire_date` datetime NOT NULL,
-  `login_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `login_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`trans_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=29 ;
 

@@ -1,6 +1,6 @@
 <?php
-require_once '/include/functions.php';
-require_once '/include/db_access.php';
+require_once 'include/functions.php';
+require_once 'include/db_access.php';
 
 $dbObject = new Databases();
 
@@ -23,12 +23,16 @@ switch($action) { //Switch case for value of action
   case "funds_transfer":
       funds_transfer($xml);       
   break;
+  case "load_gcash":
+      load_gcash($xml);
+  break;
 }
  
 function login($xml)
 {                  
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customers WHERE login_str = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->login_str)."' AND password = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->password)."' LIMIT 1;");    
-    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customers WHERE login_str = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->login_str)."' AND password = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->password)."' LIMIT 1;");
+
+
     if(mysqli_num_rows($resultset) === 0)
     {
         //Failed login
@@ -73,11 +77,11 @@ XML;
 <?xml version='1.0'?>
 <serviceResponse>                 
  <status>Success</status>
- <error></error> 
- <session_id>$hashString</session_id>                 
+ <error></error>
+ <session_id>$hashString</session_id>
 </serviceResponse>
 XML;
-        
+
         $xml = new SimpleXMLElement($responseString);
 
         echo $xml->asXML();
@@ -169,13 +173,20 @@ XML;
     
     //Get mini statement for this user
     $resultset = $GLOBALS['dbObject']->runQuery("SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHERE tw.uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."' AND tw.action=tc.code ORDER BY tw.trans_date DESC LIMIT 5;");                    
-    
+
     if(mysqli_num_rows($resultset) === 0)
-    {        
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find transactions this userid:'.$xml->uid.'');
-        $jsonResponse = json_encode($jsonResponse);
-        
-        echo $jsonResponse;
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Could not transactions for this userid:$xml->uid</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
         exit;
     }else{                               
         log_wallet_audit('wa0005',$xml->uid,'','','','');
@@ -186,11 +197,21 @@ XML;
         {
             $statement .= $row['trans_date'].",".$row['shortdesc'].",".$row['value']."|";
         }
-        
-        $jsonResponse = array('status' => 'Success', 'error' => '','statement' => $statement);                                                  
-        $jsonResponse = json_encode($jsonResponse);
-        
-        echo $jsonResponse;
+
+        $statement = rtrim($statement, "|");
+
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Success</status>
+ <error></error>
+ <statement>$statement</statement>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
         exit;
     }
 }
@@ -215,108 +236,158 @@ XML;
     }
     
     $resultset = $GLOBALS['dbObject']->runQuery("SELECT count(*) as walletexists FROM t_wallet WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
+
     $row = $resultset->fetch_array(MYSQLI_ASSOC);
             
     if($row['walletexists'] === 0)
     {
-        $jsonResponse = array('status' => 'Fail', 'error' => 'Could not find wallet for this userid:'.$xml->uid.'');
-        $jsonResponse = json_encode($jsonResponse);
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Could not find wallet for this userid:$xml->uid</error>
+</serviceResponse>
+XML;
 
-        echo $jsonResponse;
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
         exit;
     }
-    
-    if($xml->destacc === 'pool')
+
+    if($xml->destacc == 'pool')
     {
         $destacc = 'pool_balance';
     }
-    if($xml->destacc === 'glocell')
+    if($xml->destacc == 'glocell')
     {
         $destacc = 'glo_wallet';
     }
-    if($xml->destacc === 'kcmobile')
+    if($xml->destacc == 'kcmobile')
     {
         $destacc = 'kcm_wallet';
     }
-    
-    if($xml->sourceacc === 'pool')
+
+    if($xml->sourceacc == 'pool')
     {
         $sourceacc = 'pool_balance';
         $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE pool_balance >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->value)."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
-        
-        if(mysqli_num_rows($resultset) === 0)
-        {        
-            $jsonResponse = array('status' => 'Fail', 'error' => 'Your source account does not have enough funds to complete this transaction');
-            $jsonResponse = json_encode($jsonResponse);
 
-            echo $jsonResponse;
+        if(mysqli_num_rows($resultset) === 0)
+        {
+            $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Your source account does not have enough funds to complete this transaction</error>
+</serviceResponse>
+XML;
+
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
             exit;
             
-        }else{  
+        }else{
             #Update balances
-            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value.") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
-            
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value."),last_transaction_date=now() WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
+
             #Audit
             log_wallet_audit('wa0006',$xml->uid,$xml->value,$sourceacc,$destacc,'');
-            
-            $jsonResponse = array('status' => 'Success', 'error' => '');
-            $jsonResponse = json_encode($jsonResponse);
 
-            echo $jsonResponse;
+            $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Success</status>
+ <error></error>
+</serviceResponse>
+XML;
+
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
             exit;
         }
     }
-    else if($xml->sourceacc === 'glocell')
+    else if($xml->sourceacc == 'glocell')
     {
         $sourceacc = 'glo_wallet';
         $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE glo_wallet >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->value)."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
         
         if(mysqli_num_rows($resultset) === 0)
-        {        
-            $jsonResponse = array('status' => 'Fail', 'error' => 'Your source account does not have enough funds to complete this transaction');
-            $jsonResponse = json_encode($jsonResponse);
+        {
+            $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Your source account does not have enough funds to complete this transaction</error>
+</serviceResponse>
+XML;
 
-            echo $jsonResponse;
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
             exit;
             
         }else{
             #Update balances
-            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value.") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value."),last_transaction_date=now() WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
             
             #Audit
             log_wallet_audit('wa0006',$xml->uid,$xml->value,$sourceacc,$destacc,'');
-            
-            $jsonResponse = array('status' => 'Success', 'error' => '');
-            $jsonResponse = json_encode($jsonResponse);
 
-            echo $jsonResponse;
+            $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Success</status>
+ <error></error>
+</serviceResponse>
+XML;
+
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
             exit;
         }
     }
-    else if($xml->sourceacc === 'kcmobile')
+    else if($xml->sourceacc == 'kcmobile')
     {         
         $sourceacc = 'kcm_wallet';
         $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_wallet WHERE kcm_wallet >= '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->value)."' AND uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
         
         if(mysqli_num_rows($resultset) === 0)
-        {                    
-            $jsonResponse = array('status' => 'Fail', 'error' => 'Your source account does not have enough funds to complete this transaction');
-            $jsonResponse = json_encode($jsonResponse);
+        {
+            $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Your source account does not have enough funds to complete this transaction</error>
+</serviceResponse>
+XML;
 
-            echo $jsonResponse;
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
             exit;
             
         }else{            
             #Update balances
-            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value.") WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");           
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$destacc` = (`$destacc`+".$xml->value."),`$sourceacc` = (`$sourceacc`-".$xml->value."),last_transaction_date=now() WHERE uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."';");
             
             #Audit
             log_wallet_audit('wa0006',$xml->uid,$xml->value,$sourceacc,$destacc,'');
-            
-            $jsonResponse = array('status' => 'Success', 'error' => '');
-            $jsonResponse = json_encode($jsonResponse);
 
-            echo $jsonResponse;
+            $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Success</status>
+ <error></error>
+</serviceResponse>
+XML;
+
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
             exit;
         }
     }
@@ -341,7 +412,7 @@ function log_wallet_audit($action,$uid,$value,$sourcepool,$destinationpool,$vouc
 {
     if (!$GLOBALS['dbObject']->runQuery("INSERT INTO t_walletaudit (uid,action,value,source_pool,destination_pool,voucher_serial_number) VALUES ('".$uid."','".$action."','".$value."','".$sourcepool."','".$destinationpool."','".$voucherserial."');")) 
     {                   
-        writelog("log.log", "[AUDIT LOG] Failed to write to audit log");        
+        writelog("[AUDIT LOG] Failed to write to audit log");
         exit;
     }else{
         $resultset = $GLOBALS['dbObject']->runQuery("SELECT LAST_INSERT_ID() as id FROM t_walletaudit;");            
