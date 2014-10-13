@@ -1,8 +1,8 @@
 <?php
 //Write log function
-function writelog($log,$data)
+function writelog($data)
 {
-    file_put_contents($log,$data."\n", FILE_APPEND|LOCK_EX);
+    file_put_contents("log.log",$data."\n", FILE_APPEND|LOCK_EX);
 }
 
 //Function to check if the request is an AJAX request

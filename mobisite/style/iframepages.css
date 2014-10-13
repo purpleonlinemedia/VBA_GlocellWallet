@@ -1,0 +1,55 @@
+html{
+    width:100%;
+    height:100%;
+    overflow-x:hidden; 
+}
+body{
+    width:95%;
+    max-width: 37.5em;
+    margin:10px auto;
+    font-family: arial,helvetica,sans-serif;
+    background-color: #FFFFFF !important;
+    border-radius: 0px 5px 5px;
+    border: 1px solid #D3D3D3;
+    text-align: left;
+}
+
+label{
+    margin:0 0 0 15px;
+}
+
+input[type='text']{
+    display: block;
+    font-size: 25px;
+    padding: 0.5em 0px;
+    width: 95%;
+    margin:0 auto;
+}
+
+input[type='password']{
+    display: block;
+    font-size: 25px;
+    padding: 0.5em 0px;
+    width: 95%;
+    margin:0 auto;
+}
+
+/*
+input[type='button']{
+    display: inline-block;
+    background-image: url('http://www.kcmobile.com/wp-content/uploads/2014/06/Login.jpg');
+    background-repeat: no-repeat;
+    border: 0.063em none;
+    cursor: pointer;
+    line-height: 1em;
+    margin:1px 0 0 15px;
+    outline: medium none;
+    overflow: visible;
+    position: relative;
+    white-space: nowrap;
+    font-size: 25px;
+    border-radius: 0.25em;
+    width: 112px;
+    height: 29px;
+}
+*/

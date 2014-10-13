@@ -13,61 +13,63 @@ and open the template in the editor.
         <script type="text/javascript" src="js/libs/jquery/jquery.js"></script>       
         
         <script type="text/javascript">
-            function postJSON(dataObject,url)
+            function postXML(xmlString,url,action)
             {       
-                var sendString = '';
+                //var sendString = '';
                 //sendString = objToString(dataObject);
                 
-                sendString = $(this).serialize() + "&" + $.param(dataObject);
+                //sendString = $(this).serialize() + "&" + $.param(dataObject);
                 
                 $.ajax({
                     type: "POST",
                     url: url,
-                    data: dataObject,                    
-                    cache: false,                    
-                    success: function(data, textStatus, jqXHR){processJSONCall(data,textStatus,dataObject);},            
-                    error:function(jqXHR, textStatus, errorThrown){errorAlert(jqXHR,textStatus,errorThrown,dataObject);},
+                    data: xmlString,   
+                    contentType: "text/xml",
+                    cache: false,    
+                    dataType: "text",
+                    //success: function(data, textStatus, jqXHR){processResponse(data,textStatus,action);},            
+                    success: function(data, textStatus, jqXHR){responseMessage(data,textStatus,action);},            
+                    error:function(jqXHR, textStatus, errorThrown){errorAlert(jqXHR,textStatus,errorThrown,action);},
                 });                 
             }
-            
-            function processJSONCall (data,textStatus,dataObject)
+           
+            function processResponse (data,textStatus,action)
             {                             
                 var dataReturned = 0;
-                var action = dataObject.action;   
-                
+               
                 //alert(data);
-                var jsonobj = jQuery.parseJSON( data ); ;
+                var xmlobj = jQuery.parseXML( data ); ;
                 
                 if(action === 'login')
                 {                                  
-                    if(jsonobj.status === 'Success')
+                    if(xmlobj.status === 'Success')
                     {                        
-                        $('#sessionid').val(jsonobj.session_id);
+                        $('#sessionid').val(xmlobj.session_id);
                     }else{
-                        alert('Login failed:'+jsonobj.error);
+                        alert('Login failed:'+xmlobj.error);
                     }
                 }
                 else if(action === 'get_balance')
                 {                    
-                    if(jsonobj.status === 'Success')
+                    if(xmlobj.status === 'Success')
                     {
-                        alert('Pool: '+jsonobj.pool_balance+' KCM:'+jsonobj.kcm_wallet_balance+' GLO:'+jsonobj.glo_wallet_balance);
+                        alert('Pool: '+xmlobj.pool_balance+' KCM:'+xmlobj.kcm_wallet_balance+' GLO:'+xmlobj.glo_wallet_balance);
                     }else{
-                        alert('Get balance failed:'+jsonobj.error);
+                        alert('Get balance failed:'+xmlobj.error);
                     }
                 }
                 else if(action === 'get_statement')
                 {                    
-                    if(jsonobj.status === 'Success')
+                    if(xmlobj.status === 'Success')
                     {
-                        alert('Statement: '+jsonobj.statement);
+                        alert('Statement: '+xmlobj.statement);
                     }else{
-                        alert('Get statement failed:'+jsonobj.error);
+                        alert('Get statement failed:'+xmlobj.error);
                     }
                 }
                 else if(action === 'funds_transfer')
                 {                    
-                    if(jsonobj.status === 'Success')
+                    if(xmlobj.status === 'Success')
                     {
                         alert('Success');
                     }else{
@@ -98,26 +100,27 @@ and open the template in the editor.
             // /////////////////////////////////////////////////////////////////
             function getSession()
             {
-                var dataObject = {"action":"login","login_str":"tha001testcompany","password":"thapelo1234"};                                                   
-                postJSON(dataObject,'http://localhost/webservice/index.php');
+                var dataObject = {"action":"login","login_str":"tha001testcompany","password":"thapelo1234"}; 
+                var xmlString ="<?xml version='1.0'?><serviceRequest><action>login</action><login_str>tha001testcompany</login_str><password>thapelo1234</password></serviceRequest>";
+                postXML(xmlString,'http://localhost/webservice/index.php','login');
             }
             
             function getBalance()
             {
                 var dataObject = {"action":"get_balance","session_id":$('#sessionid').val(),"uid":$('#userid').val()};                     
-                postJSON(dataObject,'http://localhost/webservice/index.php');
+                postXML(dataObject,'http://localhost/webservice/index.php');
             }
             
             function getStatement()
             {
                 var dataObject = {"action":"get_statement","session_id":$('#sessionid').val(),"uid":$('#userid').val()};                     
-                postJSON(dataObject,'http://localhost/webservice/index.php');
+                postXML(dataObject,'http://localhost/webservice/index.php');
             }
             
             function fundsTransfer()
             {
                 var dataObject = {"action":"funds_transfer","session_id":$('#sessionid').val(),"value":$('#transferAmount').val(),"sourceacc":$('#sourceacc').val(),"destacc":$('#destacc').val(),"uid":$('#userid').val()};                     
-                postJSON(dataObject,'http://localhost/webservice/index.php');
+                postXML(dataObject,'http://localhost/webservice/index.php');
             }
         </script>
     </head>
