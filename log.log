@@ -99,3 +99,19 @@ SELECT value FROM t_voucher WHERE voucher_number = '123456789' AND allocated = 0
 [MYSQL] Connected to database
 [MYSQL] Connected to database
 [MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+GLO001
+pool
+123
+[MYSQL] Connected to database
+[MYSQL] Failed to run query. MySQL error: Unknown column 'PGC100' in 'field list'
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
