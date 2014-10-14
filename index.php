@@ -489,3 +489,8 @@ function log_wallet_audit($action,$uid,$value,$sourcepool,$destinationpool,$vouc
         return $w_reference;
     }
 }
+
+function generateLayByeVoucher()
+{
+    //Generate order number
+}

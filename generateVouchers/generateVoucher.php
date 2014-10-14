@@ -6,42 +6,54 @@ if(mysqli_connect_errno($link)){
 }
 
 if(isset($_POST["customerid"])){
-    //$customerid = $_POST["customerid"];
-    $customerid = "GLO001";
+    $customerid = $_POST["customerid"];
 }else{
-    $customerid = "GLO001";
+    echo "Error: Customer ID Null";
+    exit;
 }
 
-if(isset($_POST["sessionid"])){
-    //$sessionid = $_POST["sessionid"];
-    $sessionid = "";
-}else{
-    $sessionid = "";
-}
+//if(isset($_POST["sessionid"])){
+//    $sessionid = $_POST["sessionid"];
+//}else{
+//    echo "Error: Session Error";
+//    exit;
+//}
 
 if(isset($_POST["pgc010"])){
-    //$pgc010 = $_POST["pgc010"];
-    $pgc010 = "10";
+    $pgc010 = $_POST["pgc010"];
 }else{
-    $pgc010 = "10";
+    echo "Error: No PGC010";
+    exit;
 }
 if(isset($_POST["pgc020"])){
-    //$pgc020 = $_POST["pgc020"];
-    $pgc020 = "5";
+    $pgc020 = $_POST["pgc020"];
 }else{
-    $pgc020 = "5";
+    echo "Error: No PGC020";
+    exit;
 }
 if(isset($_POST["pgc050"])){
-    //$pgc050 = $_POST["pgc050"];
-    $pgc050 = "0";
+    $pgc050 = $_POST["pgc050"];
 }else{
-    $pgc050 = "0";
+    echo "Error: No PGC050";
+    exit;
 }
 if(isset($_POST["pgc100"])){
-    //$pgc100 = $_POST["pgc100"];
-    $pgc100 = "0";
+    $pgc100 = $_POST["pgc100"];
 }else{
-    $pgc100 = "5";
+    echo "Error: No PGC100";
+    exit;
+}
+if(isset($_POST["orderval"])){
+    $ordervalue = $_POST["orderval"];
+}else{
+    echo "Error: No Order Value";
+    exit;
+}
+if(isset($_POST["totalprice"])){
+    $orderprice = $_POST["totalprice"];
+}else{
+    echo "Error: No Total Price";
+    exit;
 }
 
 orderVoucher($customerid,$pgc010,$pgc020,$pgc050,$pgc100);
@@ -82,7 +94,9 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
         }
     }
     
-    $releasedate = "";
+    echo "Processing...<br/>";
+    
+    $releasedate = "0000-00-00 00:00:00";
     
     $stmnt2 = $link->prepare("INSERT INTO t_voucherorders(`customer_id`,`order_num`,`value`,`request_date`,`PGC010`,`PGC020`,`PGC050`,`PGC100`,`release_date`)
                             VALUES(?,?,?,now(),?,?,?,?,?);");
@@ -122,20 +136,21 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
             ////Insert Into PGC010 Vouchers
             if($rsltarray4['PGC010'] != "0"){
 
-                echo "<font color='red'><b>PGC010:".$rsltarray4['PGC010']."</b></font><br/>";
+                //echo "<font color='red'><b>PGC010:".$rsltarray4['PGC010']."</b></font><br/>";
 
                 $blank = "";
+                $serialnum = generateRandomString();
                 $nodate = "0000-00-00 00:00:00";
                 $PGCvalue = "10";
                 $PGCprod = "PGC010";
                 $custid = $rsltarray3['customer_id'];
                 
                 $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?);");
-                $stmnt10->bind_param('isissssssss',$newnumber,$blank,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
+                $stmnt10->bind_param('isissssssss',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
                 $stmnt10->execute();
                 $stmnt10->close();
 
-                echo "Generated Voucher: ".$newnumber."<br/><br/>";
+                //echo "Generated Voucher: ".$newnumber."<br/><br/>";
             }
         }
         
@@ -164,20 +179,21 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
             ////Insert Into PGC020 Vouchers
             if($rsltarray4['PGC020'] != "0"){
 
-                echo "<font color='red'><b>PGC020:".$rsltarray4['PGC020']."</b></font><br/>";
+                //echo "<font color='red'><b>PGC020:".$rsltarray4['PGC020']."</b></font><br/>";
 
                 $blank = "";
+                $serialnum = generateRandomString();
                 $nodate = "0000-00-00 00:00:00";
                 $PGCvalue = "20";
                 $PGCprod = "PGC020";
                 $custid = $rsltarray3['customer_id'];
                 
                 $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?);");
-                $stmnt10->bind_param('isissssssss',$newnumber,$blank,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
+                $stmnt10->bind_param('isissssssss',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
                 $stmnt10->execute();
                 $stmnt10->close();
 
-                echo "Generated Voucher: ".$newnumber."<br/><br/>";
+                //echo "Generated Voucher: ".$newnumber."<br/><br/>";
             }
         }
         
@@ -207,23 +223,24 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
             if($rsltarray4['PGC050'] != "0"){
             //if($rsltarray3['PGC050'] != "0"){
 
-                echo "<font color='red'><b>PGC050:".$rsltarray3['PGC050']."</b></font><br/>";
+                //echo "<font color='red'><b>PGC050:".$rsltarray3['PGC050']."</b></font><br/>";
 
                 $blank = "";
+                $serialnum = generateRandomString();
                 $nodate = "0000-00-00 00:00:00";
                 $PGCvalue = "50";
                 $PGCprod = "PGC050";
                 $custid = $rsltarray3['customer_id'];
                 
                 $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?);");
-                $stmnt10->bind_param('isissssssss',$newnumber,$blank,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
+                $stmnt10->bind_param('isissssssss',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
                 
                 //$stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,now(),?,now(),?,?);");
                 //$stmnt10->bind_param('isissssss',$newnumber,$blank,$ordernum,$PGCvalue,$PGCprod,$custid,$blank,$blank,$blank);
                 $stmnt10->execute();
                 $stmnt10->close();
 
-                echo "Generated Voucher: ".$newnumber."<br/><br/>";
+                //echo "Generated Voucher: ".$newnumber."<br/><br/>";
             }
         }
         
@@ -253,31 +270,43 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
             if($rsltarray4['PGC100'] != "0"){
             //if($rsltarray3['PGC050'] != "0"){
 
-                echo "<font color='red'><b>PGC100:".$rsltarray3['PGC100']."</b></font><br/>";
+                //echo "<font color='red'><b>PGC100:".$rsltarray3['PGC100']."</b></font><br/>";
 
                 $blank = "";
+                $serialnum = generateRandomString();
                 $nodate = "0000-00-00 00:00:00";
                 $PGCvalue = "100";
                 $PGCprod = "PGC100";
                 $custid = $rsltarray3['customer_id'];
                 
                 $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?);");
-                $stmnt10->bind_param('isissssssss',$newnumber,$blank,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
+                $stmnt10->bind_param('isissssssss',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
                 
                 //$stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,now(),?,now(),?,?);");
                 //$stmnt10->bind_param('isissssss',$newnumber,$blank,$ordernum,$PGCvalue,$PGCprod,$custid,$blank,$blank,$blank);
                 $stmnt10->execute();
                 $stmnt10->close();
 
-                echo "Generated Voucher: ".$newnumber."<br/><br/>";
+                //echo "Generated Voucher: ".$newnumber."<br/><br/>";
             }
         }
+        
+        echo "Vouchers Successfully Generated<br/><br/>";
     }else{
         
         $stmnt2->rollback();
         echo "Error: No rows affected";
         exit();
     }
+}
+
+function generateRandomString($length = 9) {
+    $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $randomString;
 }
 
 ///Generate The Voucher Numbers Function
