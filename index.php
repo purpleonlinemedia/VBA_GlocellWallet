@@ -181,7 +181,7 @@ XML;
     } 
     
     //Get mini statement for this user
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHERE tw.uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."' AND tw.action=tc.code ORDER BY tw.trans_date DESC LIMIT 5;");                    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHERE tw.uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."' AND tw.action=tc.code ORDER BY tw.trans_date DESC LIMIT 10;");
 
     if(mysqli_num_rows($resultset) === 0)
     {

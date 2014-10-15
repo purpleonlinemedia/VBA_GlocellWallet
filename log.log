@@ -10,3 +10,13 @@ UPDATE t_wallet SET `pool_balance` = (`pool_balance` - 30) WHERE uid = '123';
 [MYSQL] Connected to database
 [MYSQL] Connected to database
 [MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database

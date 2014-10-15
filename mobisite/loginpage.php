@@ -154,8 +154,8 @@
                 if(xmlobj.find("status").text() === 'Success')
                 {
                     $('#showbalancePool').val('R'+xmlobj.find("pool_balance").text() );
-                    $('#showbalanceGlo').val('R'+xmlobj.find("kcm_wallet_balance").text() );
-                    $('#showbalanceKCM').val('R'+xmlobj.find("glo_wallet_balance").text() );
+                    $('#showbalanceKCM').val('R'+xmlobj.find("kcm_wallet_balance").text() );
+                    $('#showbalanceGlo').val('R'+xmlobj.find("glo_wallet_balance").text() );
 
                     $('#fundtransferDiv').css('display','none');
                     $('#statementDiv').css('display','none');
