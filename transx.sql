@@ -28,6 +28,8 @@ USE `transx`;
 -- Table structure for table `t_codes`
 --
 
+DROP TABLE `t_codes`;
+
 CREATE TABLE IF NOT EXISTS `t_codes` (
   `code` varchar(6) NOT NULL,
   `shortdesc` varchar(20) NOT NULL,
@@ -59,7 +61,7 @@ INSERT INTO `t_codes` (`code`, `shortdesc`, `description`, `field_link`) VALUES
 --
 -- Table structure for table `t_customers`
 --
-
+DROP TABLE `t_customers`;
 CREATE TABLE IF NOT EXISTS `t_customers` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `cust_id` varchar(20) NOT NULL,
@@ -88,7 +90,7 @@ INSERT INTO `t_customers` (`cust_id`, `acc_type`, `company_name`, `branch_name`,
 --
 -- Table structure for table `t_customerslogin`
 --
-
+-- DROP TABLE `t_customerslogin`;
 CREATE TABLE IF NOT EXISTS `t_customerslogin` (
   `trans_id` bigint(20) NOT NULL AUTO_INCREMENT,
   `session_id` mediumtext NOT NULL,
@@ -137,7 +139,7 @@ INSERT INTO `t_customerslogin` (`trans_id`, `session_id`, `cust_id`, `expire_dat
 --
 -- Table structure for table `t_voucher`
 --
-
+DROP TABLE `t_voucher`;
 CREATE TABLE IF NOT EXISTS `t_voucher` (
   `voucher_number` int(8) NOT NULL,
   `serial_number` varchar(9) NOT NULL,
@@ -165,7 +167,7 @@ INSERT INTO `t_voucher` (`voucher_number`, `serial_number`, `order_num`, `value`
 --
 -- Table structure for table `t_voucherorders`
 --
-
+DROP TABLE `t_voucherorders`;
 CREATE TABLE IF NOT EXISTS `t_voucherorders` (
   `customer_id` varchar(6) NOT NULL,
   `order_num` int(9) NOT NULL,
@@ -190,7 +192,7 @@ INSERT INTO `t_voucherorders` (`customer_id`, `order_num`, `value`, `request_dat
 --
 -- Table structure for table `t_wallet`
 --
-
+DROP TABLE `t_wallet`;
 CREATE TABLE IF NOT EXISTS `t_wallet` (
   `uid` int(11) NOT NULL,
   `pool_balance` decimal(10,2) NOT NULL DEFAULT '0.00',
@@ -211,7 +213,7 @@ INSERT INTO `t_wallet` (`uid`, `pool_balance`, `kcm_wallet`, `glo_wallet`, `last
 --
 -- Table structure for table `t_walletaudit`
 --
-
+DROP TABLE `t_walletaudit`;
 CREATE TABLE IF NOT EXISTS `t_walletaudit` (
   `Id` bigint(20) NOT NULL AUTO_INCREMENT,
   `uid` int(11) NOT NULL,
