@@ -645,7 +645,7 @@ XML;
     }
     
     //Check if voucher to the value exists
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher WHERE product = 'wa0003' AND voucher_number = '".$xml->voucher_number."' LIMIT 1;");    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher WHERE product = 'wa0003' AND voucher_number = '".$xml->voucher_number."' AND w_reference_redeemed = '' AND allocated=0 LIMIT 1;");
     
     if(mysqli_num_rows($resultset) === 0)
     {
@@ -653,7 +653,7 @@ XML;
 <?xml version='1.0'?>
 <serviceResponse>
  <status>Fail</status>
- <error>Voucher doesnt exist</error>
+ <error>Voucher either doesnt exist or is already redeemed</error>
 </serviceResponse>
 XML;
 
@@ -686,13 +686,15 @@ XML;
         
         $resultBalance = $GLOBALS['dbObject']->runQuery("SELECT `$source_pool` as balance FROM t_wallet WHERE uid = '".$uid."' LIMIT 1;");
         $rowBalance = $resultBalance->fetch_array(MYSQLI_ASSOC);
-        
+
         if($rowBalance['balance'] >= $xml->value)
         {
             //Adequate balance, deduct value and return success
             $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$source_pool` = (`$source_pool` - ".$xml->value.") WHERE uid = '".$uid."';");
-                        
-            log_wallet_audit("wa0008",$uid,$xml->value, $source_pool,"", $voucher_number);
+
+            $wreference = log_wallet_audit("wa0008",$uid,$xml->value, $source_pool,"", $voucher_number);
+
+            $GLOBALS['dbObject']->runQuery("UPDATE t_voucher SET redeem_date = now(),w_reference_redeemed='".$wreference."',allocated=1 WHERE voucher_number = '".$voucher_number."';");
             
         $responseString = <<<XML
 <?xml version='1.0'?>
