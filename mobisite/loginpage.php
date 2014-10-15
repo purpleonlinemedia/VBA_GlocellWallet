@@ -66,6 +66,7 @@
             $('#balanceDiv').css('display','none');
             $('#statementDiv').css('display','none');
             $('#loadGCashDiv').css('display','none');
+            $('#loadLayByeDiv').css('display','none');
             $('#fundtransferDiv').css('display','inline');
         }
 
@@ -74,7 +75,17 @@
             $('#balanceDiv').css('display','none');
             $('#statementDiv').css('display','none');
             $('#fundtransferDiv').css('display','none');
+            $('#loadLayByeDiv').css('display','none');
             $('#loadGCashDiv').css('display','inline');
+        }
+
+        function showLayBye()
+        {
+            $('#balanceDiv').css('display','none');
+            $('#statementDiv').css('display','none');
+            $('#fundtransferDiv').css('display','none');
+            $('#loadGCashDiv').css('display','none');
+            $('#loadLayByeDiv').css('display','inline');
         }
 
         function isAlphaNumeric(str) {
@@ -89,7 +100,7 @@
               }
             }
             return true;
-          };
+          }
 
         function htmlEntities(str) {
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -111,13 +122,15 @@
                 contentType: "text/xml",
                 cache: false,
                 dataType: "xml",
-                success: function(data, textStatus, jqXHR){processResponse(data,textStatus,action);},                
-                error:function(jqXHR, textStatus, errorThrown){errorAlert(jqXHR,textStatus,errorThrown,action);},
+                success: function(data, textStatus, jqXHR){processResponse({xml: data, textStatus: textStatus, action: action});},
+                error:function(jqXHR, textStatus, errorThrown){errorAlert(jqXHR,textStatus,errorThrown,action);}
             });
         }
 
-        function processResponse (xml,textStatus,action)
-        {
+        function processResponse(parameters) {
+            var xml = parameters.xml;
+            var textStatus = parameters.textStatus;
+            var action = parameters.action;
             var dataReturned = 0;
 
             //var xmlobj = jQuery.parseXML(data);
@@ -141,12 +154,13 @@
                 if(xmlobj.find("status").text() === 'Success')
                 {
                     $('#showbalancePool').val('R'+xmlobj.find("pool_balance").text() );
-                    $('#showbalanceGlo').val('R'+xmlobj.find("kcm_wallet_balance").text() );
-                    $('#showbalanceKCM').val('R'+xmlobj.find("glo_wallet_balance").text() );
+                    $('#showbalanceKCM').val('R'+xmlobj.find("kcm_wallet_balance").text() );
+                    $('#showbalanceGlo').val('R'+xmlobj.find("glo_wallet_balance").text() );
 
                     $('#fundtransferDiv').css('display','none');
                     $('#statementDiv').css('display','none');
                     $('#loadGCashDiv').css('display','none');
+                    $('#loadLayByeDiv').css('display','none');
                     $('#balanceDiv').css('display','inline');
                 }else{
                     alert('Get balance failed:'+xmlobj.find("error").text());
@@ -158,6 +172,7 @@
                 {
                     $('#fundtransferDiv').css('display','none');
                     $('#balanceDiv').css('display','none');
+                    $('#loadLayByeDiv').css('display','none');
                     $('#loadGCashDiv').css('display','none');
                     $('#statementDiv').css('display','inline');
 
@@ -206,7 +221,16 @@
                 {
                     alert('Success');
                 }else{
-                    alert('Trasnfer failed:'+xmlobj.find("error").text());
+                    alert('Transfer failed:'+xmlobj.find("error").text());
+                }
+            }
+            else if(action === 'generateLayByeVoucher')
+            {
+                if(xmlobj.find("status").text() === 'Success')
+                {
+                    alert('Your laybye voucher has been generated. Your voucher number is:'+xmlobj.find("vouchernumber").text());
+                }else{
+                    alert('Transfer failed:'+xmlobj.find("error").text());
                 }
             }
 
@@ -247,6 +271,39 @@
         {
             var xmlString ="<?xml version='1.0'?><serviceRequest><action>get_statement</action><session_id>"+$('#sessionid').val()+"</session_id><uid>"+$('#userid').val()+"</uid></serviceRequest>";
             postXML(xmlString,'http://localhost/VBA_GlocellWallet/index.php','get_statement');
+        }
+
+        function generateLayBye()
+        {
+            var errorTxt = '';
+
+            var sourceaccount = $('#sourceaccLB').val();
+
+            if(sourceaccount === "...")
+            {
+                errorTxt = "Please select a source account";
+            }
+
+            if(sourceaccount === 'pool')
+            {
+                var custid = "GLO001";
+            }
+            if(sourceaccount === 'glocell')
+            {
+                var custid = "GLO001";
+            }
+            if(sourceaccount === 'kcmobile')
+            {
+                var custid = "KCO001";
+            }
+
+            if(errorTxt != '')
+            {
+                alert(errorTxt);
+            }else{
+                var xmlString ="<?xml version='1.0'?><serviceRequest><action>generateLayByeVoucher</action><session_id>"+$('#sessionid').val()+"</session_id><uid>"+$('#userid').val()+"</uid><sourcepool>"+sourceaccount+"</sourcepool><custid>"+custid+"</custid></serviceRequest>";
+                postXML(xmlString,'http://localhost/VBA_GlocellWallet/index.php','generateLayByeVoucher');
+            }
         }
 
         function load_gcash()
@@ -345,8 +402,9 @@
                         <input type="button" value="Get Balance" onclick="getBalance()">
                         <input type="button" value="Get Statement" onclick="getStatement()">
                         <input type="button" value="Load GCash Voucher" onclick="showGCash()">
-                        <input type="button" value="Get Lay-Bye Voucher">
+                        <input type="button" value="Get Lay-Bye Voucher" onclick="showLayBye()">
                         <hr>
+                        <!-- ------------------------------------------- -->
                         <div id="fundtransferDiv" style="display: none">
                             Please enter the amount you want to transfer
                             <br>
@@ -369,6 +427,7 @@
                             <br>
                             <input type="button" value="Transfer" onclick="fundsTransfer()"/>
                         </div>
+                        <!-- ------------------------------------------- -->
                         <div id="balanceDiv" style="display: none">
                             Pool balance
                             <input type="text" id="showbalancePool" readonly="true">
@@ -377,14 +436,29 @@
                             KCMobile balance
                             <input type="text" id="showbalanceKCM" readonly="true">
                         </div>
+                        <!-- ------------------------------------------- -->
                         <div id="statementDiv" style="display: none">
 
                         </div>
+                        <!-- ------------------------------------------- -->
                         <div id="loadGCashDiv" style="display: none">
                             Please enter voucher number
                             <input type="text" id="vouchernumber"/>
                             <br>
                             <input type="button" value="Load" onclick="load_gcash()">
+                        </div>
+                        <!-- ------------------------------------------- -->
+                        <div id="loadLayByeDiv" style="display: none">
+                            Please select the voucher source account
+                            <br>
+                            <select id="sourceaccLB">
+                                <option value="...">...</option>
+                                <option value="pool">My Pool</option>
+                                <option value="glocell">Glocell</option>
+                                <option value="kcmobile">KC Mobile</option>
+                            </select>
+                            <br>
+                            <input type="button" value="Generate" onclick="generateLayBye()"/>
                         </div>
                     </td>
                 </tr>

@@ -26,12 +26,21 @@ switch($action) { //Switch case for value of action
   case "load_gcash":
       load_gcash($xml);
   break;
+  case "generateLayByeVoucher":
+    generateLayByeVoucher($xml);
+  break;
+  case "redeem_laybye":
+    redeem_laybye($xml);
+  break;
+  case "allocate_voucher":
+    allocate_voucher($xml);
+  break;
+
 }
  
 function login($xml)
 {                  
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customers WHERE login_str = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->login_str)."' AND password = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->password)."' LIMIT 1;");
-
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customers WHERE login_str = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->login_str)."' AND password = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->password)."' LIMIT 1;");  
 
     if(mysqli_num_rows($resultset) === 0)
     {
@@ -81,7 +90,7 @@ XML;
  <session_id>$hashString</session_id>
 </serviceResponse>
 XML;
-
+        
         $xml = new SimpleXMLElement($responseString);
 
         echo $xml->asXML();
@@ -172,7 +181,7 @@ XML;
     } 
     
     //Get mini statement for this user
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHERE tw.uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."' AND tw.action=tc.code ORDER BY tw.trans_date DESC LIMIT 5;");                    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT tw.trans_date,tc.shortdesc,tw.value FROM t_walletaudit tw,t_codes tc WHERE tw.uid = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uid)."' AND tw.action=tc.code ORDER BY tw.trans_date DESC LIMIT 10;");
 
     if(mysqli_num_rows($resultset) === 0)
     {
@@ -458,6 +467,63 @@ XML;
     
 }
 
+function allocate_voucher($xml)
+{
+    if(!checksessionid($xml->session_id))
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Invalid request</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+
+    }
+    
+    //Check if voucher to the value exists
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher WHERE product = '".$xml->product."' AND issue_cust_id = 'GLO001' LIMIT 1;");    
+    
+    if(mysqli_num_rows($resultset) === 0)
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Voucher out of stock</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }else{
+        //Voucher exists, now allocate it
+        $row = $resultset->fetch_array(MYSQLI_ASSOC);
+        $voucherNumber = $row['voucher_number'];
+        
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Success</status>
+ <error></error>
+ <voucher_number>$voucherNumber</voucher_number>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }  
+}
+
 
 //Check sessionid validity
 function checksessionid($sessionid)
@@ -466,7 +532,18 @@ function checksessionid($sessionid)
     
     if(mysqli_num_rows($resultset) === 0)
     {
-        return false;
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Invalid request</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
     }else{
         return true;
     }    
@@ -488,4 +565,245 @@ function log_wallet_audit($action,$uid,$value,$sourcepool,$destinationpool,$vouc
 
         return $w_reference;
     }
+}
+
+function generateLayByeVoucher($xml)
+{
+    if(!checksessionid($xml->session_id))
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Invalid request</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+
+    }
+
+    //Generate order number
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucherorders ORDER BY order_num DESC LIMIT 1;");
+    $row = $resultset->fetch_array(MYSQLI_ASSOC);
+    $ordernum1 = $row['order_num'];
+    $ordernum2 = $ordernum1 + 1;
+
+    //Insert order number
+    $GLOBALS['dbObject']->runQuery("INSERT INTO t_voucherorders(`customer_id`,`order_num`,`value`,`request_date`)
+                            VALUES('".$xml->custid."','".$ordernum2."','',now());");
+
+
+    //Generate voucher number and serial number
+    $newnumber = genVoucher($xml->custid);
+    $serialnum = generateRandomString();
+
+    //Wallet audit
+    $wreference = log_wallet_audit('wa0003',$xml->uid,0,$xml->sourcepool,'',$newnumber);
+
+
+    //Insert voucher numbers
+    $GLOBALS['dbObject']->runQuery("INSERT INTO t_voucher(`voucher_number`,`serial_number`,`order_num`,`product`,`issue_date`,`issue_cust_id`,`allocated_date`,`w_reference_allocated`)
+                            VALUES('".$newnumber."','".$serialnum."','".$ordernum2."','wa0003',now(),'".$xml->custid."',now(),'".$wreference."');");
+
+
+    $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Success</status>
+ <vouchernumber>$newnumber</vouchernumber>
+ <error></error>
+</serviceResponse>
+XML;
+
+    $xml = new SimpleXMLElement($responseString);
+
+    echo $xml->asXML();
+    exit;
+}
+
+function redeem_laybye($xml)
+{
+    if(!checksessionid($xml->session_id))
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Invalid request</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+
+    }
+    
+    //Check if voucher to the value exists
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher WHERE product = 'wa0003' AND voucher_number = '".$xml->voucher_number."' AND w_reference_redeemed = '' AND allocated=0 LIMIT 1;");
+    
+    if(mysqli_num_rows($resultset) === 0)
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Voucher either doesnt exist or is already redeemed</error>
+</serviceResponse>
+XML;
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }else{
+        //Voucher exists, now check if wallet balance is sufficient
+        $row = $resultset->fetch_array(MYSQLI_ASSOC);
+        $voucher_number = $row['voucher_number'];
+        
+        $resultWallet = $GLOBALS['dbObject']->runQuery("SELECT source_pool,uid FROM t_walletaudit WHERE voucher_serial_number = '".$voucher_number."' LIMIT 1;");
+        $rowWallet = $resultWallet->fetch_array(MYSQLI_ASSOC);
+        $source_pool = $rowWallet['source_pool'];
+        $uid = $rowWallet['uid'];
+        
+        if($source_pool === 'pool')
+        {
+            $source_pool = 'pool_balance';
+        }
+        if($source_pool === 'glocell')
+        {
+            $source_pool = 'glo_wallet';
+        }
+        if($source_pool === 'kcmobile')
+        {
+            $source_pool = 'kcm_wallet';
+        }
+        
+        $resultBalance = $GLOBALS['dbObject']->runQuery("SELECT `$source_pool` as balance FROM t_wallet WHERE uid = '".$uid."' LIMIT 1;");
+        $rowBalance = $resultBalance->fetch_array(MYSQLI_ASSOC);
+
+        if($rowBalance['balance'] >= $xml->value)
+        {
+            //Adequate balance, deduct value and return success
+            $GLOBALS['dbObject']->runQuery("UPDATE t_wallet SET `$source_pool` = (`$source_pool` - ".$xml->value.") WHERE uid = '".$uid."';");
+
+            $wreference = log_wallet_audit("wa0008",$uid,$xml->value, $source_pool,"", $voucher_number);
+
+            $GLOBALS['dbObject']->runQuery("UPDATE t_voucher SET redeem_date = now(),w_reference_redeemed='".$wreference."',allocated=1 WHERE voucher_number = '".$voucher_number."';");
+            
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Success</status>
+ <error></error> 
+</serviceResponse>
+XML;
+
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
+            exit;
+        }else{
+            $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Inedequate wallet balance in the source account. Please transfer to the source wallet</error>
+</serviceResponse>
+XML;
+
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
+            exit;
+        }
+        
+    }  
+}
+
+///Generate The Voucher Numbers Function
+function genVoucher($uid){
+    ////Generate Random Number
+    $char1 = array("0","1","2","3","4","5","6","7","8","9");
+    $keys1 = array();
+
+    while(count($keys1) < 4){
+        $x = mt_rand(0, count($char1)-1);
+
+        if(!in_array($x, $keys1)) {
+            $keys1[] = $x;
+        }
+    }
+
+    $random_chars = "";
+
+    foreach($keys1 as $key){
+        $random_chars .= $char1[$key];
+    }
+
+    ////Generate Sequential Number
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher ORDER BY voucher_number DESC LIMIT 1;");
+    $rsltarray = $resultset->fetch_array(MYSQLI_ASSOC);
+
+
+    if($rsltarray['voucher_number'] != ""){
+
+        $sequence = $rsltarray['voucher_number'];
+        $numarr = substr($sequence,-5,-1);
+
+        ///Increment Sequential Number
+        $num = $numarr + 1;
+        $padnum = sprintf('%1$04d',$num, $random_chars);
+
+        $newnumber = Luhn($padnum,$random_chars);
+
+        if($newnumber != ""){
+            return $newnumber;
+        }else{
+            return "0";
+        }
+    }
+}
+
+///Luhn Function To Check Number
+function Luhn($number,$sequencenum){
+    global $link;
+
+    $stack = 0;
+    $number = str_split(strrev($number));
+
+    foreach ($number as $key => $value){
+
+        if ($key % 2 == 0){
+            $value = array_sum(str_split($value * 2));
+        }
+
+        $stack += $value;
+    }
+    $stack %= 10;
+
+    if ($stack != 0){
+        $stack -= 10;     $stack = abs($stack);
+    }
+
+    $number = implode('', array_reverse($number));
+    $number = $number . strval($stack);
+
+    $newnumber = $sequencenum."".$number;
+
+    return $newnumber;
+}
+
+function generateRandomString($length = 9) {
+    $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, strlen($characters) - 1)];
+    }
+    return $randomString;
 }
