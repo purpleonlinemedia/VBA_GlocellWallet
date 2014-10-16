@@ -487,7 +487,7 @@ XML;
     }
     
     //Check if voucher to the value exists
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher WHERE product = '".$xml->product."' AND issue_cust_id = 'GLO001' AND allocated='0' LIMIT 1;");    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher tv,t_voucherorders tvo WHERE tv.product = '".$xml->product."' AND tv.order_num = tvo.order_num AND tvo.release_date != '0000-00-00 00:00:00'  AND tv.issue_cust_id = 'GLO001' AND tv.allocated='0' LIMIT 1;");    
     
     if(mysqli_num_rows($resultset) === 0)
     {
