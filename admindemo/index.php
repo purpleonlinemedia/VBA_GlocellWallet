@@ -29,7 +29,14 @@ if(isset($_GET['id'])){
 }
 
 if(isset($_GET['type'])){
-    $acctype = $_GET['type'];
+    
+    $stmnt110 = "SELECT acc_type FROM t_customers WHERE cust_id = '".$custid."';";
+    $rslt110 = mysqli_query($link, $stmnt110);
+    $rsltarray110 = $rslt110->fetch_array(MYSQLI_ASSOC);
+    $acctype = $rsltarray110['acc_type'];
+    //$acctype = $_GET['type'];
+    
+    
 }else{
     $acctype = "Voucher Sales";
 }
@@ -315,7 +322,10 @@ while($rsltarray10 = $rslt10->fetch_array(MYSQLI_ASSOC)){
 }
 ?>                          
                         </select>
-<?php 
+                        &nbsp;&nbsp;
+<?php
+print "                 <input type='hidden' id='customer-acc' value='".$acctype."' />";
+print "                 <label>Account Type: ".$acctype."</label>";                        
 ////Voucher Display Area
 print "                 <table id='salesreports-table'>";
 print "                     <tr>";
@@ -336,7 +346,7 @@ print "                             <strong>Rebate<strong>";
 print "                         </td>";
 print "                     </tr>";
 
-$stmnt11 = "SELECT * FROM t_customers WHERE acc_type = '".$acctype."';";
+$stmnt11 = "SELECT * FROM t_customers WHERE acc_type = '".$acctype."' AND cust_id = '".$custid."';";
 $rslt11 = mysqli_query($link, $stmnt11);
 
 while($rsltarray11 = $rslt11->fetch_array(MYSQLI_ASSOC)){
@@ -360,7 +370,7 @@ while($rsltarray11 = $rslt11->fetch_array(MYSQLI_ASSOC)){
     
     while($rsltarray12 = $rslt12->fetch_array(MYSQLI_ASSOC)){
 
-        $stmnt13 = "SELECT * FROM t_voucher WHERE order_num = '".$rsltarray12['order_num']."'";
+        $stmnt13 = "SELECT * FROM t_voucher WHERE order_num = '".$rsltarray12['order_num']."';";
         $rslt13 = mysqli_query($link, $stmnt13);
         
         while($rsltarray13 = $rslt13->fetch_array(MYSQLI_ASSOC)){
@@ -606,20 +616,10 @@ print               "</table>";
             var reporttype = $(this).attr('id');
             
             var cusid = $("#voucherreport-customer").val();
+            var accounttype = $("#customer-acc").val();
             
-            if(reporttype === "todayereport"){
-                if(cusid === 'GLO001'){
-                    document.location.href='index.php?ref=report&type=Voucher Sales&report='+reporttype+'&id='+cusid;
-                }else if(cusid === 'GLO002'){
-                    document.location.href='index.php?ref=report&type=Retail&report='+reporttype+'&id='+cusid;
-                }
-            }else{
-                if(cusid === 'GLO001'){
-                    document.location.href='index.php?ref=report&type=Voucher Sales&report='+reporttype+'&id='+cusid;
-                }else if(cusid === 'GLO002'){
-                    document.location.href='index.php?ref=report&type=Retail&report='+reporttype+'&id='+cusid;
-                }
-            }
+            document.location.href='index.php?ref=report&type='+accounttype+'&report='+reporttype+'&id='+cusid;
+            
         });
         
        
@@ -684,7 +684,8 @@ print               "</table>";
             var dataString = "customerid=" + customer + "&pgc010=" + pgc10val + "&pgc020=" + pgc20val + "&pgc050=" + pgc50val +
                             "&pgc100=" + pgc100val + "&orderval=" + ordervalue + "&totalprice=" + orderprice;
             
-            $("#batch_status").html("Processing. Please wait...<br/><br/>");
+            $("#batch_status").show(500);
+            $("#batch_status").html("Processing. Please wait...<br/><br/>").delay(5000).hide(0);
             
             $.ajax({
                 type: "POST",   
