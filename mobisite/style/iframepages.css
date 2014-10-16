@@ -71,8 +71,13 @@ td div input[type='text']{
     padding: 10px 0px 10px 0px;
     margin: 0px 0px 5px 0px;
 }
-td div input[type='button']{
-    margin: 20px 0px 0px 0px;
+.pagebuttons{
+    display:inline;
+    margin: 20px 0px 0px 5px !important;
+    width: auto;
+    height: auto;
+    font-size: 14px !important;
+    font-weight: 400;
 }
 /*
 input[type='button']{

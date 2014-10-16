@@ -398,11 +398,11 @@
             <table border="1" width="100%">
                 <tr>
                     <td>
-                        <input type="button" value="Funds Transfer" onclick="showTransfer()">
-                        <input type="button" value="Get Balance" onclick="getBalance()">
-                        <input type="button" value="Get Statement" onclick="getStatement()">
-                        <input type="button" value="Load GCash Voucher" onclick="showGCash()">
-                        <input type="button" value="Get Lay-Bye Voucher" onclick="showLayBye()">
+                        <input type="button" value="Transfer Funds" class='pagebuttons' onclick="showTransfer()">
+                        <input type="button" value="Balance" class='pagebuttons' onclick="getBalance()">
+                        <input type="button" value="Statement" class='pagebuttons' onclick="getStatement()">
+                        <input type="button" value="Load GCash" class='pagebuttons' onclick="showGCash()">
+                        <input type="button" value="Get Lay-Bye" class='pagebuttons' onclick="showLayBye()">
                         <hr>
                         <!-- ------------------------------------------- -->
                         <div id="fundtransferDiv" style="display: none">
