@@ -122,7 +122,7 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
             $rsltarray5 = $rslt5->fetch_array(MYSQLI_ASSOC);
 
             if($rsltarray5['voucher_number'] != "" || $rsltarray5['voucher_number'] != ""){
-                echo "Duplicate Found";
+                //echo "Duplicate Found";
                 $newnumber = genVoucher($uid,$ordernum,$pgval);
             }
             
@@ -143,8 +143,8 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
                 $PGCprod = "PGC010";
                 $custid = $rsltarray3['customer_id'];
                 
-                $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?);");
-                $stmnt10->bind_param('isissssssss',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
+                $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?,?);");
+                $stmnt10->bind_param('isissssssssi',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank,$blank);
                 $stmnt10->execute();
                 $stmnt10->close();
 
@@ -165,7 +165,7 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
             $rsltarray5 = $rslt5->fetch_array(MYSQLI_ASSOC);
 
             if($rsltarray5['voucher_number'] != "" || $rsltarray5['voucher_number'] != ""){
-                echo "Duplicate Found";
+                //echo "Duplicate Found";
                 $newnumber = genVoucher($uid,$ordernum,$pgval);
             }
             
@@ -186,8 +186,8 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
                 $PGCprod = "PGC020";
                 $custid = $rsltarray3['customer_id'];
                 
-                $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?);");
-                $stmnt10->bind_param('isissssssss',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
+                $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?,?);");
+                $stmnt10->bind_param('isissssssssi',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank,$blank);
                 $stmnt10->execute();
                 $stmnt10->close();
 
@@ -208,7 +208,7 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
             $rsltarray5 = $rslt5->fetch_array(MYSQLI_ASSOC);
 
             if($rsltarray5['voucher_number'] != "" || $rsltarray5['voucher_number'] != ""){
-                echo "Duplicate Found";
+                //echo "Duplicate Found";
                 $newnumber = genVoucher($uid,$ordernum,$pgval);
             }
             
@@ -230,8 +230,8 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
                 $PGCprod = "PGC050";
                 $custid = $rsltarray3['customer_id'];
                 
-                $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?);");
-                $stmnt10->bind_param('isissssssss',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
+                $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?,?);");
+                $stmnt10->bind_param('isissssssssi',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank,$blank);
                 
                 //$stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,now(),?,now(),?,?);");
                 //$stmnt10->bind_param('isissssss',$newnumber,$blank,$ordernum,$PGCvalue,$PGCprod,$custid,$blank,$blank,$blank);
@@ -255,7 +255,7 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
             $rsltarray5 = $rslt5->fetch_array(MYSQLI_ASSOC);
 
             if($rsltarray5['voucher_number'] != "" || $rsltarray5['voucher_number'] != ""){
-                echo "Duplicate Found";
+                //echo "Duplicate Found";
                 $newnumber = genVoucher($uid,$ordernum,$pgval);
             }
             
@@ -277,8 +277,8 @@ function orderVoucher($uid,$gc10,$gc20,$gc50,$gc100){
                 $PGCprod = "PGC100";
                 $custid = $rsltarray3['customer_id'];
                 
-                $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?);");
-                $stmnt10->bind_param('isissssssss',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank);
+                $stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,?,?,?,?,?,?);");
+                $stmnt10->bind_param('isissssssssi',$newnumber,$serialnum,$ordernum,$PGCvalue,$PGCprod,$custid,$nodate,$blank,$nodate,$blank,$blank,$blank);
                 
                 //$stmnt10 = $link->prepare("INSERT INTO t_voucher VALUES (?,?,?,?,?,now(),?,now(),?,now(),?,?);");
                 //$stmnt10->bind_param('isissssss',$newnumber,$blank,$ordernum,$PGCvalue,$PGCprod,$custid,$blank,$blank,$blank);

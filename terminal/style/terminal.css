@@ -14,3 +14,54 @@ html body{
     font-weight: 600;
     font-size: 32px;
 }
+
+#user_pass{
+    border:1px dotted green;
+    background-color: #7bb819 !important;
+    color: #111111;
+}
+#login_btn{
+    display:block;
+    background-color: #7bb819;
+    border: 0;
+    font-size: 24px;
+    text-transform: uppercase;
+}
+#homediv,table,tr,td{
+    border:0;
+}
+.pagebuttons{
+    display:inline-block;
+    background-color: #7bb819;
+    border:0px dotted green;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+#buyVoucherDiv input[type='button']{
+    border:0px dotted green;
+    background-color: green;
+    font-size: 16px;
+    text-transform: uppercase;
+    margin:5px 5px 5px 5px;
+    padding:5px 5px 5px 5px;
+}
+#buyVoucherDiv input[type='text']{
+    border:1px dotted green;
+    background-color: #7bb819;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+#redeemVoucherDiv input[type='button']{
+    border:0px dotted green;
+    background-color: green;
+    font-size: 16px;
+    text-transform: uppercase;
+    margin:5px 5px 5px 5px;
+    padding:5px 5px 5px 5px;
+}
+#redeemVoucherDiv input[type='text']{
+    border:1px dotted green;
+    background-color: #7bb819;
+    font-size: 16px;
+    text-transform: uppercase;
+}
