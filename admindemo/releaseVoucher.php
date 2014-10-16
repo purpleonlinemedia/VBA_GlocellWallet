@@ -63,32 +63,53 @@ function generateFile($ordernum){
     $currentmonth = date('m');
     $currentyear = date('Y');
     $today = date("Y-m-d H:i:s");
+    $expirydate = date('d-m-Y',strtotime(date("d-m-Y", time())." + 365 day"));
     
     $stmnt4 = "SELECT * FROM t_voucher WHERE order_num = '".mysqli_real_escape_string($link,$ordernum)."';"
             or die ("Error fetching..." . mysqli_error($link));
     $rslt4 = mysqli_query($link, $stmnt4);
-    
+        
     $stmnt5 = "SELECT *,SUM(PGC010+PGC020+PGC050+PGC100) AS totalval FROM t_voucherorders WHERE order_num = '".mysqli_real_escape_string($link,$ordernum)."' GROUP BY PGC010;"
-                        or die ("Error fetching..." . mysqli_error($link));
+            or die ("Error fetching..." . mysqli_error($link));
     $rslt5 = mysqli_query($link, $stmnt5);
     $rsltarray5 = $rslt5->fetch_array(MYSQLI_ASSOC);
     
-////Create the Text File
-    $content = "H|".$ordernum."|".$rsltarray5['request_date']."|orderid|generationno|".$today." \r\n";
-    $count = 0;
+////Iterate files for PGC codes
+    $stmnt100 = "SELECT code FROM t_codes WHERE code LIKE 'PGC%' ORDER BY code ASC;"
+            or die ("Error fetching..." . mysqli_error($link));
+    $rslt100 = mysqli_query($link, $stmnt100);
     
-    while($rsltarray4 = $rslt4->fetch_array(MYSQLI_ASSOC)){
-        $content .= "D|UPN000020|".$rsltarray4['value']."|windowperiod|expirydate|supplierbatchnumber|".$rsltarray4['serial_number']."|voucherpinnumber \r\n";
-        $count = $count + 1;
+    while($rsltarray100 = $rslt100->fetch_array(MYSQLI_ASSOC)){
+        
+        $stmnt50 = "SELECT * FROM t_voucher WHERE order_num = '".mysqli_real_escape_string($link,$ordernum)."' AND product ='".$rsltarray100['code']."';"
+                or die ("Error fetching..." . mysqli_error($link));
+        $rslt50 = mysqli_query($link, $stmnt50);
+
+        $count = 0;
+////////Create the Text File
+        $content = "H|".$ordernum."|".$rsltarray5['request_date']."|".$ordernum."|".$ordernum."|".$today." \r\n";
+        
+        $pgcval = $rsltarray100['code'];
+        $newpgc = substr($pgcval,-3,3);
+        
+        while($rsltarray50 = $rslt50->fetch_array(MYSQLI_ASSOC)){
+            $content .= "D|PGC000".$newpgc."|".$rsltarray50['value']."|unlimited|".$expirydate."|".$ordernum."|".$rsltarray50['serial_number']."|".$rsltarray50['voucher_number']." \r\n";
+            $count = $count + 1;
+        }
+
+        $value = $count * 10;
+        $value = number_format($value, 2, '.', '');
+        $clientname = $rsltarray5['customer_id'];
+        $docclientname = substr($clientname,0,3);
+        $docclientid = substr($clientname,-3,3);
+
+        $content .= "F|".$count."|R ".$value."|Hash Total|".$rsltarray100['code'].":".$count;
+        $fp = fopen("orders/".$docclientname."000".$docclientid."STD_PO".$ordernum."_".$rsltarray100['code']."_".$count."_".$currentday.".".$currentmonth.".".$currentyear.".txt","wb");
+        fwrite($fp,$content);
+        fclose($fp);
+        $dllink = "orders/".$docclientname."000".$docclientid."STD_PO".$ordernum."_".$rsltarray100['code']."_".$count."_".$currentday.".".$currentmonth.".".$currentyear.".txt";
+
+        echo "Batch File Generated: <a href='".$dllink."' target='_new'>Click To Download The ".$rsltarray100['code']." Voucher Batch</a><br/>";
     }
-    $content .= "F|".$count."|R ".$rsltarray5['value']."|".$rsltarray5['totalval']."|quantity";
-    $fp = fopen("orders/TPC000020STD_PO".$ordernum."_tel50_1_".$currentday.".".$currentmonth.".".$currentyear.".txt","wb");
-    fwrite($fp,$content);
-    fclose($fp);
-    
-    $dllink = "orders/TPC000020STD_PO".$ordernum."_tel50_1_".$currentday.".".$currentmonth.".".$currentyear.".txt";
-    
-    echo "Batch File Generated<br/><a href='".$dllink."' target='_new'>Click Here To Download</a> ";
-    exit;
 }
 ?>
