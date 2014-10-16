@@ -487,7 +487,7 @@ XML;
     }
     
     //Check if voucher to the value exists
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher WHERE product = '".$xml->product."' AND issue_cust_id = 'GLO001' LIMIT 1;");    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucher WHERE product = '".$xml->product."' AND issue_cust_id = 'GLO001' AND allocated='0' LIMIT 1;");    
     
     if(mysqli_num_rows($resultset) === 0)
     {
@@ -507,6 +507,8 @@ XML;
         //Voucher exists, now allocate it
         $row = $resultset->fetch_array(MYSQLI_ASSOC);
         $voucherNumber = $row['voucher_number'];
+        
+        $GLOBALS['dbObject']->runQuery("UPDATE t_voucher SET allocated='1' WHERE voucher_number = '".$voucherNumber."';");  
         
         $responseString = <<<XML
 <?xml version='1.0'?>
