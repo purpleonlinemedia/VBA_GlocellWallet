@@ -77,7 +77,26 @@ function createCustomer($acctype,$company,$branch,$contact,$contactemail,$contac
         $custid = $rsltarray['cust_id'];
         
         if($custid != "" || $custid != null){
-            $newcustid = "Gotta Generate an ID based on a Previous one";
+            $stmnt100 = "SELECT * FROM t_customers WHERE company_name = '".$company."' ORDER BY cust_id DESC LIMIT 1;"
+                        or die ("Error fetching..." . mysqli_error($link));
+            $rslt100 = mysqli_query($link, $stmnt100);
+            $rsltarray100 = $rslt100->fetch_array(MYSQLI_ASSOC);
+            
+            $coname = $rsltarray100['custid'];
+            $abbrev = substr($coname,0,3);
+            $abbrevnum = substr($coname,-3,3);
+            $abbrevnum = $abbrevnum + 1;
+            $abbrevstr = strlen($abbrevnum);
+
+            if($abbrevstr == '1'){
+                $abbrevnum = "00".$abbrevnum;
+            }else if($abbrevstr == '2'){
+                $abbrevnum = "0".$abbrevnum;
+            }else{
+                $abbrevnum = $abbrevnum;
+            }
+            
+            $newcustid = $abbrev."".$abbrevnum;
         }else{
             $coname = $company;
             $abbrev = substr($coname,0,3);
