@@ -67,7 +67,7 @@
             $('#statementDiv').css('display','none');
             $('#loadGCashDiv').css('display','none');
             $('#loadLayByeDiv').css('display','none');
-            $('#fundtransferDiv').css('display','inline');
+            $('#fundtransferDiv').css('display','block');
         }
 
         function showGCash()
@@ -76,7 +76,7 @@
             $('#statementDiv').css('display','none');
             $('#fundtransferDiv').css('display','none');
             $('#loadLayByeDiv').css('display','none');
-            $('#loadGCashDiv').css('display','inline');
+            $('#loadGCashDiv').css('display','block');
         }
 
         function showLayBye()
@@ -85,7 +85,7 @@
             $('#statementDiv').css('display','none');
             $('#fundtransferDiv').css('display','none');
             $('#loadGCashDiv').css('display','none');
-            $('#loadLayByeDiv').css('display','inline');
+            $('#loadLayByeDiv').css('display','block');
         }
 
         function isAlphaNumeric(str) {
@@ -114,7 +114,7 @@
             //sendString = objToString(dataObject);
 
             //sendString = $(this).serialize() + "&" + $.param(dataObject);
-
+            alert(xmlString);
             $.ajax({
                 type: "POST",
                 url: url,
@@ -143,7 +143,7 @@
                     $('#sessionid').val(xmlobj.find("session_id").text());
                     
                     $('#logindiv').css('display','none');
-                    $('#homediv').css('display','inline');
+                    $('#homediv').css('display','block');
                     
                 }else{
                     alert('Login failed:'+xmlobj.find("error").text());
@@ -161,7 +161,7 @@
                     $('#statementDiv').css('display','none');
                     $('#loadGCashDiv').css('display','none');
                     $('#loadLayByeDiv').css('display','none');
-                    $('#balanceDiv').css('display','inline');
+                    $('#balanceDiv').css('display','block');
                 }else{
                     alert('Get balance failed:'+xmlobj.find("error").text());
                 }
@@ -174,7 +174,7 @@
                     $('#balanceDiv').css('display','none');
                     $('#loadLayByeDiv').css('display','none');
                     $('#loadGCashDiv').css('display','none');
-                    $('#statementDiv').css('display','inline');
+                    $('#statementDiv').css('display','block');
 
                     var statementString = xmlobj.find("statement").text();
 
@@ -406,7 +406,7 @@
                         <hr>
                         <!-- ------------------------------------------- -->
                         <div id="fundtransferDiv" style="display: none">
-                            Please enter the amount you want to transfer
+                            Enter Transfer Amount
                             <br>
                             <input type="text" id="transferAmount" name="transferAmount" maxlength="10"/>
                             <br>
@@ -414,14 +414,14 @@
                             <select id="sourceacc">
                                 <option value="...">...</option>
                                 <option value="pool">My Pool</option>
-                                <option value="glocell">Glocell</option>
+                                <option value="glocell">GloCell</option>
                                 <option value="kcmobile">KC Mobile</option>
                             </select>
                             To:
                             <select id="destacc">
                                 <option value="...">...</option>
                                 <option value="pool">My Pool</option>
-                                <option value="glocell">Glocell</option>
+                                <option value="glocell">GloCell</option>
                                 <option value="kcmobile">KC Mobile</option>
                             </select>
                             <br>
@@ -429,11 +429,11 @@
                         </div>
                         <!-- ------------------------------------------- -->
                         <div id="balanceDiv" style="display: none">
-                            Pool balance
+                            Pool Balance
                             <input type="text" id="showbalancePool" readonly="true">
-                            Glocell balance
+                            Glocell Balance
                             <input type="text" id="showbalanceGlo" readonly="true">
-                            KCMobile balance
+                            KCMobile Balance
                             <input type="text" id="showbalanceKCM" readonly="true">
                         </div>
                         <!-- ------------------------------------------- -->
@@ -442,19 +442,19 @@
                         </div>
                         <!-- ------------------------------------------- -->
                         <div id="loadGCashDiv" style="display: none">
-                            Please enter voucher number
+                            Enter Voucher Number
                             <input type="text" id="vouchernumber"/>
                             <br>
                             <input type="button" value="Load" onclick="load_gcash()">
                         </div>
                         <!-- ------------------------------------------- -->
                         <div id="loadLayByeDiv" style="display: none">
-                            Please select the voucher source account
+                            Select Voucher Source Account
                             <br>
                             <select id="sourceaccLB">
                                 <option value="...">...</option>
                                 <option value="pool">My Pool</option>
-                                <option value="glocell">Glocell</option>
+                                <option value="glocell">GloCell</option>
                                 <option value="kcmobile">KC Mobile</option>
                             </select>
                             <br>

@@ -13,7 +13,19 @@ body{
     border: 1px solid #D3D3D3;
     text-align: left;
 }
-
+table, tr, td{
+    width:100%;
+    border: 0;
+}
+tr:nth-child(even) {
+    background-color: #F5F5F5;
+}
+td{
+    width:20%;
+}
+td div{
+    margin:0px 0px 0px 10px;
+}
 label{
     margin:0 0 0 15px;
 }
@@ -33,7 +45,35 @@ input[type='password']{
     width: 95%;
     margin:0 auto;
 }
-
+input[type='button']{
+    border: 0.063em none;
+    cursor: pointer;
+    line-height: 1em;
+    margin:5px 0 5px 15px;
+    overflow: visible;
+    white-space: nowrap;
+    font-size: 18px;
+    border-radius: 0.25em;
+    width: auto;
+    height: 29px;
+    background-color: #111111;
+    color: #ffb622;
+    text-transform: uppercase;
+}
+select{
+    display: block;
+    font-size: 25px;
+    padding: 5px 0px 5px 0px;
+    width: auto;
+    margin: 0px 0px 10px 0px;
+}
+td div input[type='text']{
+    padding: 10px 0px 10px 0px;
+    margin: 0px 0px 5px 0px;
+}
+td div input[type='button']{
+    margin: 20px 0px 0px 0px;
+}
 /*
 input[type='button']{
     display: inline-block;
