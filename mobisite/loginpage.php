@@ -114,7 +114,7 @@
             //sendString = objToString(dataObject);
 
             //sendString = $(this).serialize() + "&" + $.param(dataObject);
-            
+            alert(xmlString);
             $.ajax({
                 type: "POST",
                 url: url,

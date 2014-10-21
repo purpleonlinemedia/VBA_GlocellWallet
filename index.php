@@ -1,8 +1,10 @@
 <?php
 require_once 'include/functions.php';
 require_once 'include/db_access.php';
+require_once 'vendor/autoload.php';
 
 use Respect\Validation\Validator as v;
+
 
 $dbObject = new Databases();
 
@@ -32,8 +34,9 @@ XML;
 
 $action = $xml->action;
 
-if(!v::alpha()->noWhitespace()->length(5,30)->validate($action))
+if(!v::alpha()->validate($action))
 {
+    writelog("in it");
     //Invalid action
     $responseString = <<<XML
 <?xml version='1.0'?>
@@ -48,6 +51,8 @@ XML;
     echo $xml->asXML();
     exit;  
 }
+
+writelog("out it");
 
 switch($action) { //Switch case for value of action
   case "login": 
