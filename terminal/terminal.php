@@ -248,11 +248,11 @@
                         <div id="buyVoucherDiv" style="display: none">
                             Select a voucher
                             <br>
-                            <input type="button" value="PCC10" onclick="buyVoucher('PGC010')">
-                            <input type="button" value="PCC20" onclick="buyVoucher('PGC020')">
+                            <input type="button" value="PGC010" onclick="buyVoucher('PGC010')">
+                            <input type="button" value="PGC020" onclick="buyVoucher('PGC020')">
                             <br>
-                            <input type="button" value="PCC50" onclick="buyVoucher('PGC050')">
-                            <input type="button" value="PCC100" onclick="buyVoucher('PGC100')">
+                            <input type="button" value="PGC050" onclick="buyVoucher('PGC050')">
+                            <input type="button" value="PGC100" onclick="buyVoucher('PGC100')">
                             <br>
                             <br>
                             Your voucher number is

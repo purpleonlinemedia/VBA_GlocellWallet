@@ -82,7 +82,7 @@ function createCustomer($acctype,$company,$branch,$contact,$contactemail,$contac
             $rslt100 = mysqli_query($link, $stmnt100);
             $rsltarray100 = $rslt100->fetch_array(MYSQLI_ASSOC);
             
-            $coname = $rsltarray100['custid'];
+            $coname = $rsltarray100['cust_id'];
             $abbrev = substr($coname,0,3);
             $abbrevnum = substr($coname,-3,3);
             $abbrevnum = $abbrevnum + 1;

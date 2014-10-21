@@ -684,8 +684,9 @@ print               "</table>";
             var dataString = "customerid=" + customer + "&pgc010=" + pgc10val + "&pgc020=" + pgc20val + "&pgc050=" + pgc50val +
                             "&pgc100=" + pgc100val + "&orderval=" + ordervalue + "&totalprice=" + orderprice;
             
-            $("#batch_status").show(500);
             $("#batch_status").html("Processing. Please wait...<br/><br/>").delay(5000).hide(0);
+            $("#batch_status").show(500);
+            
             
             $.ajax({
                 type: "POST",   

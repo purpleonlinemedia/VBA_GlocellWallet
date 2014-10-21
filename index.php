@@ -245,7 +245,7 @@ XML;
     }
 
     //Check if voucher exists
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT value,product FROM t_voucher WHERE voucher_number = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->voucher_number)."' AND allocated = 0;");
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT value,product FROM t_voucher WHERE voucher_number = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->voucher_number)."' AND allocated = 1;");
 
     if(mysqli_num_rows($resultset) === 0)
     {
