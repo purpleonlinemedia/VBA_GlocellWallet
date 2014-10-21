@@ -20,7 +20,7 @@ if(!$xml)
 <?xml version='1.0'?>
 <serviceResponse>                 
  <status>Fail</status>
- <error>Invalid request</error> 
+ <error>Empty request</error> 
 </serviceResponse>
 XML;
         
