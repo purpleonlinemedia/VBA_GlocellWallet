@@ -2,13 +2,52 @@
 require_once 'include/functions.php';
 require_once 'include/db_access.php';
 
+use Respect\Validation\Validator as v;
+
 $dbObject = new Databases();
 
+
+//Get posted XML
 $dataPOST = trim(file_get_contents('php://input'));
 
 $xml = simplexml_load_string($dataPOST);
 
+//Check that well formed xml was sent
+if(!$xml)
+{
+    //Invalid XML
+    $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid request</error> 
+</serviceResponse>
+XML;
+        
+    $xml = new SimpleXMLElement($responseString);
+
+    echo $xml->asXML();
+    exit;    
+}
+
 $action = $xml->action;
+
+if(!v::alpha()->noWhitespace()->length(5,30)->validate($action))
+{
+    //Invalid action
+    $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid request</error> 
+</serviceResponse>
+XML;
+        
+    $xml = new SimpleXMLElement($responseString);
+
+    echo $xml->asXML();
+    exit;  
+}
 
 switch($action) { //Switch case for value of action
   case "login": 

@@ -1,0 +1,13 @@
+{
+    "name": "vendor/v-b-a-glocell-wallet",
+    "description": "Description of project VBA_GlocellWallet.",
+    "authors": [
+        {
+            "name": "Thapelo",
+            "email": "your@email.here"
+        }
+    ],
+    "require": {
+        "respect/validation": "dev-master"
+    }
+}
