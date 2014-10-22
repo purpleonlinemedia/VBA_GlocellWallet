@@ -113,8 +113,7 @@
             //var sendString = '';
             //sendString = objToString(dataObject);
 
-            //sendString = $(this).serialize() + "&" + $.param(dataObject);
-            alert(xmlString);
+            //sendString = $(this).serialize() + "&" + $.param(dataObject);            
             $.ajax({
                 type: "POST",
                 url: url,
@@ -257,7 +256,7 @@
         // /////////////////////////////////////////////////////////////////
         function getSession()
         {
-            var xmlString ="<?xml version='1.0'?><serviceRequest><action>login</action><login_str>tha001testcompany</login_str><password>thapelo1234</password></serviceRequest>";
+            var xmlString ="<?xml version='1.0'?><serviceRequest><action>login</action><uname>tha001testcompany</uname><password>thapelo1234</password></serviceRequest>";
             postXML(xmlString,'http://localhost/VBA_GlocellWallet/index.php','login');
         }
 
@@ -301,7 +300,7 @@
             {
                 alert(errorTxt);
             }else{
-                var xmlString ="<?xml version='1.0'?><serviceRequest><action>generateLayByeVoucher</action><session_id>"+$('#sessionid').val()+"</session_id><uid>"+$('#userid').val()+"</uid><sourcepool>"+sourceaccount+"</sourcepool><custid>"+custid+"</custid></serviceRequest>";
+                var xmlString ="<?xml version='1.0'?><serviceRequest><action>generate_lb_voucher</action><session_id>"+$('#sessionid').val()+"</session_id><uid>"+$('#userid').val()+"</uid><sourcepool>"+sourceaccount+"</sourcepool><custid>"+custid+"</custid></serviceRequest>";
                 postXML(xmlString,'http://localhost/VBA_GlocellWallet/index.php','generateLayByeVoucher');
             }
         }

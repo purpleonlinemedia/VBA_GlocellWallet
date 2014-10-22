@@ -76,3 +76,42 @@ login
 [MYSQL] Connected to database
 [MYSQL] Connected to database
 [MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+out it
+[MYSQL] Connected to database
+[MYSQL] Connected to database
+in it
+[MYSQL] Connected to database
+in it
+[MYSQL] Connected to database
+in it
+[MYSQL] Connected to database
+in it
+[MYSQL] Connected to database
+
+in it
+[MYSQL] Connected to database
+in it
+[MYSQL] Connected to database
+login
+[MYSQL] Connected to database
+in it
+[MYSQL] Connected to database
+object
+in it
+[MYSQL] Connected to database
+out it
+[MYSQL] Connected to database
+[MYSQL] Failed to run query. MySQL error: Table 'transx.t_customerss' doesn't exist
+[MYSQL] Connected to database
+[MYSQL] Failed to run query. MySQL error: Table 'transx.t_customerss' doesn't exist
+[MYSQL] Connected to database
+[MYSQL] Failed to run query. MySQL error: Table 'transx.t_customerss' doesn't exist
+1
+SELECT count(*) FROM t_customerslogin WHERE session_id = '0a26d2fb3e968dcc1a42d6e459c2a33a123' AND (DATEDIFF(`expire_date`,now())) > 0 LIMIT 1;

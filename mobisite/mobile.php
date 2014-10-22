@@ -5,7 +5,7 @@
     <head>
         <meta charset="utf-8" />
         <title>Login | KCMOBILE</title>
-        <link rel='stylesheet' type='text/css' href='style/style.css'>
+        <!--<link rel='stylesheet' type='text/css' href='style/style.css'>-->
         <meta name='robots' content='noindex,follow' />
     </head>
     <body>

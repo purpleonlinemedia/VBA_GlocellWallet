@@ -1,0 +1,19 @@
+
+Table 'transx.t_customerss' doesn't exist
+[MYSQL] Failed to update XML out. MySQL error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '1.0'?>
+<serviceResponse>                 
+ <status>Success</status>
+ <error><' at line 1
+[MYSQL] Failed to update XML out. MySQL error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '1.0'?>
+<serviceResponse>                 
+ <status>Success</status>
+ <error><' at line 1
+[MYSQL] Failed to update XML out. MySQL error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '1.0'?>
+<serviceResponse>                 
+ <status>Success</status>
+ <error><' at line 1
+[MYSQL] Failed to insert XML in. MySQL error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '1.0'?><serviceRequest><action>login</action><uname>tha001testcompany</uname><pas' at line 1
+[MYSQL] Failed to update XML out. MySQL error: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '1.0'?>
+<serviceResponse>                 
+ <status>Success</status>
+ <error><' at line 1

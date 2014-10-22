@@ -1,18 +1,21 @@
 <?php
 require_once 'include/functions.php';
 require_once 'include/db_access.php';
-require_once 'vendor/autoload.php';
+require_once './vendor/autoload.php';
 
 use Respect\Validation\Validator as v;
 
-
 $dbObject = new Databases();
 
+//Globals
+$xmlLastInsertRowId;
 
 //Get posted XML
 $dataPOST = trim(file_get_contents('php://input'));
 
 $xml = simplexml_load_string($dataPOST);
+
+$xmlLastInsertRowId= $GLOBALS['dbObject']->logXMLIn($dataPOST,$_SERVER['REMOTE_ADDR']);
 
 //Check that well formed xml was sent
 if(!$xml)
@@ -33,26 +36,26 @@ XML;
 }
 
 $action = $xml->action;
+$action = (string)$action;
 
-if(!v::alpha()->validate($action))
-{
-    writelog("in it");
+if(!v::string()->notEmpty()->noWhitespace()->length(5,30)->validate($action))
+{    
     //Invalid action
     $responseString = <<<XML
 <?xml version='1.0'?>
 <serviceResponse>                 
  <status>Fail</status>
- <error>Invalid request</error> 
+ <error>Invalid request type</error> 
 </serviceResponse>
 XML;
+    
+    $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
         
     $xml = new SimpleXMLElement($responseString);
 
     echo $xml->asXML();
     exit;  
 }
-
-writelog("out it");
 
 switch($action) { //Switch case for value of action
   case "login": 
@@ -70,22 +73,85 @@ switch($action) { //Switch case for value of action
   case "load_gcash":
       load_gcash($xml);
   break;
-  case "generateLayByeVoucher":
+  case "generate_lb_voucher":
     generateLayByeVoucher($xml);
   break;
-  case "redeem_laybye":
+  case "redeem_lb":
     redeem_laybye($xml);
   break;
   case "allocate_voucher":
     allocate_voucher($xml);
   break;
+  default:
+      //Invalid XML
+    $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Action not found</error> 
+</serviceResponse>
+XML;
+      
+    $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
+    $xml = new SimpleXMLElement($responseString);
+
+    echo $xml->asXML();
+    exit; 
+  break;    
 
 }
  
 function login($xml)
-{                  
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customers WHERE login_str = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->login_str)."' AND password = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->password)."' LIMIT 1;");  
+{        
+    $uname = $xml->uname;
+    $uname = (string)$uname;
+    
+    $password = $xml->password;
+    $password = (string)$password;
+    
+    if(!v::alnum()->notEmpty()->noWhitespace()->length(5,50)->validate($uname) || !v::alnum()->notEmpty()->noWhitespace()->length(5,50)->validate($password))
+    {
+        //Failed login validation
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Failed validation</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
+        $xml = new SimpleXMLElement($responseString);
 
+        echo $xml->asXML();
+        exit;
+    }
+    
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customers WHERE login_str = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->uname)."' AND password = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$xml->password)."' LIMIT 1;");  
+    
+    if(!$resultset)
+    {
+       //Database error
+       databaseErrorLog(mysqli_error($GLOBALS['dbObject']->conn));
+        
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>System error, please contact support</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;  
+    }
+    
     if(mysqli_num_rows($resultset) === 0)
     {
         //Failed login
@@ -93,9 +159,11 @@ function login($xml)
 <?xml version='1.0'?>
 <serviceResponse>                 
  <status>Fail</status>
- <error>Invalid request</error> 
+ <error>Invalid login</error> 
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
         
         $xml = new SimpleXMLElement($responseString);
 
@@ -119,11 +187,16 @@ XML;
  <error>Failed to generate session, please contact support</error> 
 </serviceResponse>
 XML;
-        
-        $xml = new SimpleXMLElement($responseString);
+            
+            //Database error
+            databaseErrorLog(mysqli_error($GLOBALS['dbObject']->conn));
 
-        echo $xml->asXML();
-        exit;                       
+            $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+
+            $xml = new SimpleXMLElement($responseString);
+
+            echo $xml->asXML();
+            exit;                       
         }
         
         $responseString = <<<XML
@@ -135,16 +208,40 @@ XML;
 </serviceResponse>
 XML;
         
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
         $xml = new SimpleXMLElement($responseString);
 
         echo $xml->asXML();
         exit;            
     }
-  //echo json_encode($return);
+  
 }
 
 function get_balance($xml)
 {    
+    $session_id = $xml->session_id;
+    $session_id = (string)$session_id;
+    
+    if(!v::alnum()->notEmpty()->noWhitespace()->length(5,100)->validate($session_id))
+    {
+        //Failed login validation
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid session ID</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);               
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+    
     if(!checksessionid($xml->session_id))
     {
         $responseString = <<<XML
@@ -154,6 +251,7 @@ function get_balance($xml)
  <error>Invalid request</error> 
 </serviceResponse>
 XML;
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
         
         $xml = new SimpleXMLElement($responseString);
 
@@ -176,6 +274,8 @@ XML;
 </serviceResponse>
 XML;
         
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
         $xml = new SimpleXMLElement($responseString);
 
         echo $xml->asXML();
@@ -197,6 +297,7 @@ XML;
  <glo_wallet_balance>$glo_wallet</glo_wallet_balance>                 
 </serviceResponse>
 XML;
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
         
         $xml = new SimpleXMLElement($responseString);
 
@@ -207,6 +308,28 @@ XML;
 
 function get_statement($xml)
 {
+    $session_id = $xml->session_id;
+    $session_id = (string)$session_id;
+    
+    if(!v::alnum()->notEmpty()->noWhitespace()->length(5,100)->validate($session_id))
+    {
+        //Failed login validation
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid session ID</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);        
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+    
     if(!checksessionid($xml->session_id))
     {
         $responseString = <<<XML
@@ -216,6 +339,8 @@ function get_statement($xml)
  <error>Invalid request</error> 
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
         
         $xml = new SimpleXMLElement($responseString);
 
@@ -236,6 +361,8 @@ XML;
  <error>Could not transactions for this userid:$xml->uid</error>
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
         $xml = new SimpleXMLElement($responseString);
 
@@ -261,6 +388,8 @@ XML;
  <statement>$statement</statement>
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
         $xml = new SimpleXMLElement($responseString);
 
@@ -282,10 +411,32 @@ function load_gcash($xml)
 XML;
 
         $xml = new SimpleXMLElement($responseString);
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);  
 
         echo $xml->asXML();
         exit;
 
+    }
+    
+    $voucher_number = $xml->voucher_number;
+    $voucher_number = (string)$voucher_number;
+    
+    if(!v::numeric()->notEmpty()->noWhitespace()->length(9,9)->validate($voucher_number))
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Invalid voucher number</error>
+</serviceResponse>
+XML;
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);  
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
     }
 
     //Check if voucher exists
@@ -297,9 +448,11 @@ XML;
 <?xml version='1.0'?>
 <serviceResponse>
  <status>Fail</status>
- <error>Invalid voucher number</error>
+ <error>Voucher number does not exist</error>
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);   
 
         $xml = new SimpleXMLElement($responseString);
 
@@ -325,6 +478,8 @@ XML;
  <error></error>
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);   
 
         $xml = new SimpleXMLElement($responseString);
 
@@ -335,6 +490,28 @@ XML;
 
 function funds_transfer($xml)
 {
+    $session_id = $xml->session_id;
+    $session_id = (string)$session_id;
+    
+    if(!v::alnum()->notEmpty()->noWhitespace()->length(5,100)->validate($session_id))
+    {
+        //Failed login validation
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid session ID</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);        
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+    
     if(!checksessionid($xml->session_id))
     {
         $responseString = <<<XML
@@ -344,6 +521,8 @@ function funds_transfer($xml)
  <error>Invalid request</error> 
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
         
         $xml = new SimpleXMLElement($responseString);
 
@@ -365,13 +544,98 @@ XML;
  <error>Could not find wallet for this userid:$xml->uid</error>
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
         $xml = new SimpleXMLElement($responseString);
 
         echo $xml->asXML();
         exit;
     }
+    
+    //Validate destination and source account
+    $destacc = $xml->destacc;
+    $destacc = (string)$destacc;
+    
+    $sourceacc = $xml->sourceacc;
+    $sourceacc = (string)$sourceacc;
 
+    if(!v::string()->notEmpty()->noWhitespace()->length(4,13)->validate($destacc) || !v::string()->notEmpty()->noWhitespace()->length(4,13)->validate($sourceacc))
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid content</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+    
+    $value = $xml->value;
+    $value = (string)$value;
+    
+    if(!v::numeric()->notEmpty()->noWhitespace()->validate($value))
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid value</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+    
+    //Check that a valid source and destination account was sent
+    if($xml->destacc != 'pool' && $xml->destacc != 'glocell' && $xml->destacc != 'kcmobile')
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid destination account</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+    
+    if($xml->sourceacc != 'pool' && $xml->sourceacc != 'glocell' && $xml->sourceacc != 'kcmobile')
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>                 
+ <status>Fail</status>
+ <error>Invalid source account</error> 
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+        
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+    
     if($xml->destacc == 'pool')
     {
         $destacc = 'pool_balance';
@@ -399,6 +663,7 @@ XML;
  <error>Your source account does not have enough funds to complete this transaction</error>
 </serviceResponse>
 XML;
+            $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
             $xml = new SimpleXMLElement($responseString);
 
@@ -420,6 +685,8 @@ XML;
 </serviceResponse>
 XML;
 
+            $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+            
             $xml = new SimpleXMLElement($responseString);
 
             echo $xml->asXML();
@@ -440,6 +707,7 @@ XML;
  <error>Your source account does not have enough funds to complete this transaction</error>
 </serviceResponse>
 XML;
+            $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
             $xml = new SimpleXMLElement($responseString);
 
@@ -460,6 +728,7 @@ XML;
  <error></error>
 </serviceResponse>
 XML;
+            $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
             $xml = new SimpleXMLElement($responseString);
 
@@ -482,6 +751,8 @@ XML;
 </serviceResponse>
 XML;
 
+            $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+            
             $xml = new SimpleXMLElement($responseString);
 
             echo $xml->asXML();
@@ -501,6 +772,7 @@ XML;
  <error></error>
 </serviceResponse>
 XML;
+            $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
             $xml = new SimpleXMLElement($responseString);
 
@@ -574,7 +846,7 @@ XML;
 //Check sessionid validity
 function checksessionid($sessionid)
 {
-    $resultset = $GLOBALS['dbObject']->runQuery("SELECT count(*) FROM t_customerslogin WHERE session_id = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$sessionid)."' AND (DATEDIFF(`expire_date`,now())) > 0 LIMIT 1;");
+    $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_customerslogin WHERE session_id = '".mysqli_real_escape_string($GLOBALS['dbObject']->conn,$sessionid)."' AND (DATEDIFF(`expire_date`,now())) > 0 LIMIT 1;");
     
     if(mysqli_num_rows($resultset) === 0)
     {
@@ -582,9 +854,11 @@ function checksessionid($sessionid)
 <?xml version='1.0'?>
 <serviceResponse>
  <status>Fail</status>
- <error>Invalid request</error>
+ <error>Invalid session</error>
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
         $xml = new SimpleXMLElement($responseString);
 
@@ -624,6 +898,8 @@ function generateLayByeVoucher($xml)
  <error>Invalid request</error>
 </serviceResponse>
 XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
         $xml = new SimpleXMLElement($responseString);
 
@@ -664,6 +940,8 @@ XML;
  <error></error>
 </serviceResponse>
 XML;
+    
+    $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
 
     $xml = new SimpleXMLElement($responseString);
 
