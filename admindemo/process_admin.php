@@ -674,10 +674,10 @@ function createCustomer($acctype,$company,$branch,$contact,$contactemail,$contac
     
     //global $GLOBALS['dbObject']->conn;
     
-    if($company === "" || $branch === "" || $contact === "" || $contactemail === "" || $contactnum === "" || $rebate === "" || $lname === "" || $lpass === ""){
-        return "ERROR: Please enter values in all required fields";
-        //exit;
-    }else{
+//    if($company === "" || $branch === "" || $contact === "" || $contactemail === "" || $contactnum === "" || $rebate === "" || $lname === "" || $lpass === ""){
+//        return "ERROR: Please enter values in all required fields";
+//        //exit;
+//    }else{
         $stmnt = "SELECT * FROM t_customers WHERE company_name = '".$company."' ORDER BY cust_id ASC;"
                         or die ("Error fetching..." . mysqli_error($GLOBALS['dbObject']->conn));
         $rslt = mysqli_query($GLOBALS['dbObject']->conn, $stmnt);
@@ -726,7 +726,7 @@ function createCustomer($acctype,$company,$branch,$contact,$contactemail,$contac
             return "Customer Successfully Created.";
             //exit;
         }
-    }
+    //}
 }
 
 function updateVoucher($ordernum){

@@ -14,7 +14,7 @@ $adminpassword = "";
 //$str = $row['cust_id'].$row['company_name'].$row['contact_num'].$random;
 //$hashString = md5($str);
 
-///UPDATE t_customerslogin�?
+///UPDATE t_customerslogin‏
 
 if(isset($_GET['ref'])){
     $action = $_GET['ref'];
@@ -56,8 +56,6 @@ if(isset($_GET['report'])){
         <meta name='robots' content='noindex,follow' />
     </head>
     <body>
-        <input type="hidden" name="sessionid" id="sessionid"/>
-        <input type="hidden" name="userid" id="userid" value="GLO001"/>
         <div id='admin-container'>
             <div id='admin-header'>
                 <div id='header'>TransX Dashboard</div>
@@ -518,182 +516,6 @@ print               "</table>";
 </html>
 <script src='includes/jquery-cookie-master/src/jquery.cookie.js'></script>
 <script type='text/javascript'>
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    //Webservice calls////////////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-    function postXML(xmlString,url,action)
-    {
-        //var sendString = '';
-        //sendString = objToString(dataObject);
-
-        //sendString = $(this).serialize() + "&" + $.param(dataObject);
-
-        $.ajax({
-            type: "POST",
-            url: url,
-            data: xmlString,
-            contentType: "text/xml",
-            cache: false,
-            dataType: "xml",
-            success: function(data, textStatus, jqXHR){processResponse({xml: data, textStatus: textStatus, action: action});},
-            error:function(jqXHR, textStatus, errorThrown){errorAlert(jqXHR,textStatus,errorThrown,action);}
-        });
-    }
-    
-    function processResponse(parameters) {
-        var xml = parameters.xml;
-        var textStatus = parameters.textStatus;
-        var action = parameters.action;
-        var dataReturned = 0;
-
-        var xmlobj = $(xml).find('serviceResponse');
-
-        if(action === 'login')
-        {
-
-        }else if(action === 'generateGcashVoucher')
-        {
-            alert(xmlobj.find("status").text());
-            
-            if(xmlobj.find("status").text() === 'Success')
-            {
-                alert('Success');
-            }else{
-                alert('Generate G-Cash Voucher failed:'+xmlobj.find("error").text());
-            }
-        }else if(action === 'releaseGcashVoucher')
-        {
-            alert(xmlobj.find("status").text());
-            
-            if(xmlobj.find("status").text() === 'Success')
-            {
-                alert('Success');
-            }else{
-                alert('Release G-Cash Voucher failed:'+xmlobj.find("error").text());
-            }
-        }else if(action === 'createCustomer')
-        {
-            alert(xmlobj.find("status").text());
-            
-            if(xmlobj.find("status").text() === 'Success')
-            {
-                alert('Success');
-            }else{
-                alert('New Customer failed:'+xmlobj.find("error").text());
-            }
-        }
-    }
-    
-    function errorAlert(jqXHR,textStatus,errorThrown,dataObject)
-    {
-            if(errorThrown !== '')
-            {
-                alert('[AJAX ERROR]: '+errorThrown);
-            }
-    }
-    
-    function objToString (obj)
-    {
-        var tabjson=[];
-        for (var p in obj) {
-            if (obj.hasOwnProperty(p)) {
-                tabjson.push('"'+p +'"'+ ':"' + obj[p]+'"');
-            }
-        }  tabjson.push();
-        return '{'+tabjson.join(',')+'}';
-    }
-    // /////////////////////////////////////////////////////////////////
-    function getSession()
-    {
-        var xmlString = "<?xml version='1.0' ?><serviceRequest><action>login</action><login_str>admin</login_str><password>admin</password></serviceRequest>";
-        postXML(xmlString,'process_admin.php','login');
-    }
-    
-    function generate_gcash()
-    {
-        var errorTxt = '';
-        
-        var pgc10val = $("#pgc010-val").val();
-        var pgc20val = $("#pgc020-val").val();
-        var pgc50val = $("#pgc050-val").val();
-        var pgc100val = $("#pgc100-val").val();
-        
-        if (!$.isNumeric(pgc10val) && errorTxt === '')
-        {
-            errorTxt = 'Invalid G-Cash10 value';
-        }
-        if (!$.isNumeric(pgc20val) && errorTxt === '')
-        {
-            errorTxt = 'Invalid G-Cash20 value';
-        }
-        if (!$.isNumeric(pgc50val) && errorTxt === '')
-        {
-            errorTxt = 'Invalid G-Cash50 value';
-        }
-        if (!$.isNumeric(pgc100val) && errorTxt === '')
-        {
-            errorTxt = 'Invalid G-Cash100 value';
-        }
-        
-        if(errorTxt != '')
-        {
-            alert(errorTxt);
-        }else{
-            var xmlString ="<?xml version='1.0'?><serviceRequest><action>generateGcashVoucher</action><session_id>"+$('#sessionid').val()+"</session_id><uid>"+$('#userid').val()+"</uid><pgc010>"+pgc10val+"</pgc010><pgc020>"+pgc20val+"</pgc020><pgc050>"+pgc50val+"</pgc050><pgc100>"+pgc100val+"</pgc100></serviceRequest>";
-            postXML(xmlString,'http://gacc.vb-a.co.za/admindemo/process_admin.php','generateGcashVoucher');
-        }
-    }
-    
-    function release_gcash()
-    {
-        var errorTxt = '';
-        
-        var ordernum = $(this).attr('id');
-        
-        if(errorTxt != '')
-        {
-            alert(errorTxt);
-        }else{
-            var xmlString ="<?xml version='1.0'?><serviceRequest><action>releaseGcashVoucher</action><session_id>"+$('#sessionid').val()+"</session_id><uid>"+$('#userid').val()+"</uid><ordernum>"+ordernum+"</ordernum></serviceRequest>";
-            postXML(xmlString,'process_admin.php','releaseGcashVoucher');
-        }
-    }
-    
-    function create_customer()
-    {
-        var errorTxt = '';
-        
-        var acctype = $("#acc_type").val();
-        var companyname = $("#company_name").val();
-        var branchname = $("#branch_name").val(); 
-        var cusname = $("#contact_person").val();
-        var cusemail = $("#contact_email").val();
-        var cusnum = $("#contact_number").val();
-        var rebate = $("#sales_rebate").val();
-        var loginname  = $("#login_name").val();
-        var loginpass = $("#login_pass").val();
-        
-        if (!$.isNumeric(cusnum) && errorTxt === '')
-        {
-            errorTxt = 'Invalid number format';
-        }
-        
-        if (!$.isNumeric(rebate) && errorTxt === '')
-        {
-            errorTxt = 'Invalid number format';
-        }
-        
-        if(errorTxt != '')
-        {
-            alert(errorTxt);
-        }else{
-            var xmlString ="<?xml version='1.0'?><serviceRequest><action>createCustomer</action><session_id>"+$('#sessionid').val()+"</session_id><uid>"+$('#userid').val()+"</uid><acctype>"+acctype+"</acctype><company>"+companyname+"</company><branch>"+branchname+"</branch><contact>"+cusname+"</contact><contactemail>"+cusemail+"</contactemail><contactnum>"+cusnum+"</contactnum><rebate>"+rebate+"</rebate><loginname>"+loginname+"</loginname><loginpass>"+loginpass+"</loginpass></serviceRequest>";
-            postXML(xmlString,'process_admin.php','createCustomer');
-        }
-    }
-    
-    /////Main Page Jquery Functions//////////////
-    
     $(document).ready(function(){
         var logincount = 0;
         var visited = $.cookie('loggedin');
@@ -715,9 +537,7 @@ print               "</table>";
             $("#logout").slideUp(1000);
             
             $.cookie("loggedin", null,{ 
-                path: '/',
-                //domain: 'gacc.vb-a.co.za'
-                domain: '127.0.0.1'
+                path: '/' 
             });
             document.location.href='index.php';
         });
@@ -734,7 +554,6 @@ print               "</table>";
                 $.cookie('loggedin', '1',{ // create a cookie with all available options
                     expires: 1, // expires in one day
                     path: '/', // accessible from the whole site...
-                    //domain: 'gacc.vb-a.co.za',
                     domain: '127.0.0.1',
                     secure: false // ...true for cookies on a secure connection
                 });
@@ -803,16 +622,8 @@ print               "</table>";
             
         });
         
-        $(".releasebatchBtn").click(function(){
-           
-           var batch = confirm("Are you sure you want to release this voucher batch?");
-           
-           if(batch === true){
-               release_gcash();
-           }
-       });
        
-        $(".releasebatchBtn-old").click(function(){
+        $(".releasebatchBtn").click(function(){
            var ordernum = $(this).attr('id');
            
            var dataString = "ordernum=" + ordernum;
@@ -861,13 +672,6 @@ print               "</table>";
         });
         
         $("#create-batch").click(function(){
-            $("#batch_status").show(500);
-            $("#batch_status").html("Processing. Please wait...<br/><br/>").delay(10000).hide(0);
-            
-            generate_gcash();
-        });
-        
-        $("#create-batch-old").click(function(){
             var customer = $("#customer-select").val();
             //var pgc10val = $("#pgc010-val").val();
             var pgc10val = $("#pgc010-val").val();
@@ -887,7 +691,7 @@ print               "</table>";
             $.ajax({
                 type: "POST",   
                 async: true,
-                url: "process_admin.php",
+                url: "generateVoucher.php",
                 data: dataString, 
                 success: function(data){
                     $("#batch-status").html(data);
@@ -898,10 +702,6 @@ print               "</table>";
         });
         
         $("#create-customer").click(function(){
-            create_customer();
-        });
-        
-        $("#create-customer-old").click(function(){
             var acctype = $("#acc_type").val();
             var companyname = $("#company_name").val();
             var branchname = $("#branch_name").val(); 
