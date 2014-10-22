@@ -908,6 +908,27 @@ XML;
 
     }
 
+    //Generate voucher number and serial number
+    $newnumber = genVoucher($xml->custid);
+    
+    if($newnumber === "0")
+    {
+        $responseString = <<<XML
+<?xml version='1.0'?>
+<serviceResponse>
+ <status>Fail</status>
+ <error>Failed to generate voucher number, please try again</error>
+</serviceResponse>
+XML;
+        
+        $GLOBALS['dbObject']->logXMLout($responseString,$GLOBALS['xmlLastInsertRowId']);
+
+        $xml = new SimpleXMLElement($responseString);
+
+        echo $xml->asXML();
+        exit;
+    }
+    
     //Generate order number
     $resultset = $GLOBALS['dbObject']->runQuery("SELECT * FROM t_voucherorders ORDER BY order_num DESC LIMIT 1;");
     $row = $resultset->fetch_array(MYSQLI_ASSOC);
@@ -919,8 +940,7 @@ XML;
                             VALUES('".$xml->custid."','".$ordernum2."','',now());");
 
 
-    //Generate voucher number and serial number
-    $newnumber = genVoucher($xml->custid);
+    
     $serialnum = generateRandomString();
 
     //Wallet audit
